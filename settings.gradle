@@ -1,2 +1,2 @@
-include ':app'
+include ':app', ':module_novel', ':export_novel'
 rootProject.name='NovelVideoModuleNovel'
