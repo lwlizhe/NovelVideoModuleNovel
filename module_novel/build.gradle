@@ -11,7 +11,7 @@ android {
 
 
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -39,5 +39,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     implementation 'com.github.lwlizhe:NovelVideoModuleCommon:v0.0.1'
+    implementation project(path: ':export_novel')
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
 }

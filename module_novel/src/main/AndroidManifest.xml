@@ -1,2 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.lwlizhe.module" />
+    package="com.lwlizhe.module" >
+    <application>
+        <activity android:name=".content.ui.NovelContentActivity"/>
+    </application>
+</manifest>

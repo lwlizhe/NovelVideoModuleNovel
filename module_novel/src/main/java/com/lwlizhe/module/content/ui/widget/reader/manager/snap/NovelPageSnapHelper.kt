@@ -1,19 +1,26 @@
-package com.lwlizhe.module.content.ui.widget.simulation
+package com.lwlizhe.module.content.ui.widget.reader.manager.snap
 
 import android.view.View
 import androidx.recyclerview.widget.OrientationHelper
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SmoothScroller.ScrollVectorProvider
+import com.lwlizhe.module.content.ui.widget.reader.manager.layout.BaseContentLayoutManager
 import kotlin.math.abs
 
-class NovelPageSnapHelper : PagerSnapHelper() {
+class NovelPageSnapHelper : PagerSnapHelper {
 
     private var mVerticalHelper: OrientationHelper? = null
     private var mHorizontalHelper: OrientationHelper? = null
 
     private var tempVelocityX:Int=0
     private var tempVelocityY:Int=0
+
+    private var layoutMode: BaseContentLayoutManager.ContentLayoutMode
+
+    constructor(layoutMode: BaseContentLayoutManager.ContentLayoutMode) : super() {
+        this.layoutMode = layoutMode
+    }
 
     override fun findTargetSnapPosition(
         layoutManager: RecyclerView.LayoutManager,
@@ -24,8 +31,8 @@ class NovelPageSnapHelper : PagerSnapHelper() {
         tempVelocityX=velocityX
         tempVelocityY=velocityY
 
-        return if (layoutManager?.getChildAt(1) == null) {
-            0
+        return if (layoutManager.getChildAt(1) == null) {
+            layoutManager.getPosition(layoutManager.getChildAt(0)!!)
         } else {
             layoutManager.getPosition(layoutManager.getChildAt(1)!!)
         }
@@ -40,7 +47,7 @@ class NovelPageSnapHelper : PagerSnapHelper() {
         targetView: View
     ): IntArray? {
         val out = IntArray(2)
-        if (layoutManager.canScrollHorizontally()) {
+        if (layoutMode.isCanScrollHorizontally) {
             out[0] = distanceToCenter(
                 layoutManager, targetView,
                 getHorizontalHelper(layoutManager)
@@ -49,7 +56,7 @@ class NovelPageSnapHelper : PagerSnapHelper() {
             out[0] = 0
         }
 
-        if (layoutManager.canScrollVertically()) {
+        if (layoutMode.isCanScrollVertically) {
             out[1] = distanceToCenter(
                 layoutManager, targetView,
                 getVerticalHelper(layoutManager)
@@ -89,7 +96,7 @@ class NovelPageSnapHelper : PagerSnapHelper() {
         layoutManager: RecyclerView.LayoutManager, velocityX: Int,
         velocityY: Int
     ): Boolean {
-        return if (layoutManager.canScrollHorizontally()) {
+        return if (layoutMode.isCanScrollHorizontally) {
             velocityX > 0
         } else {
             velocityY > 0
@@ -109,12 +116,16 @@ class NovelPageSnapHelper : PagerSnapHelper() {
     }
 
     private fun getOrientationHelper(layoutManager: RecyclerView.LayoutManager): OrientationHelper? {
-        return if (layoutManager.canScrollVertically()) {
-            getVerticalHelper(layoutManager)
-        } else if (layoutManager.canScrollHorizontally()) {
-            getHorizontalHelper(layoutManager)
-        } else {
-            null
+        return when {
+            layoutMode.isCanScrollVertically -> {
+                getVerticalHelper(layoutManager)
+            }
+            layoutMode.isCanScrollHorizontally -> {
+                getHorizontalHelper(layoutManager)
+            }
+            else -> {
+                null
+            }
         }
     }
 
