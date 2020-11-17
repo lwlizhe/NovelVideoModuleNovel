@@ -94,19 +94,19 @@ class SimulationHorizontallyContentLayoutManager : BaseContentLayoutManager {
 
             setViewElevation(topView)
             addView(topView)
-            layoutDecorated(
-                topView,
-                0,
-                0, getDecoratedMeasuredWidth(topView),
-                getDecoratedMeasuredHeight(topView)
-            )
 //            layoutDecorated(
 //                topView,
-//                -offset % width,
 //                0,
-//                -offset % width + getDecoratedMeasuredWidth(topView),
+//                0, getDecoratedMeasuredWidth(topView),
 //                getDecoratedMeasuredHeight(topView)
 //            )
+            layoutDecorated(
+                topView,
+                -offset % width,
+                0,
+                -offset % width + getDecoratedMeasuredWidth(topView),
+                getDecoratedMeasuredHeight(topView)
+            )
         }
 
         return distance
@@ -136,7 +136,7 @@ class SimulationHorizontallyContentLayoutManager : BaseContentLayoutManager {
                 if (currentOrientationState == Companion.STATE_IDLE && !isTurnNext) {
                     if (offset / width > 0) {
                         currentOrientationState = STATE_TURN_PRE
-                        scrollToPosition(max(0, offset / width - 1) * width + ev.x.toInt())
+                        scrollToPosition(max(0, offset / width - 1) * width + (width-ev.x.toInt()))
 
 //                        offset = max(0, offset / width - 1) * width + ev.x.toInt()
 //                        offset = getCurrentOffsetForRange()
