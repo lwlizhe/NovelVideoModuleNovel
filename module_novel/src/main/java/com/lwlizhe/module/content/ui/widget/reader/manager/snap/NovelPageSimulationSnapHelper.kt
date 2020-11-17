@@ -171,13 +171,14 @@ class NovelPageSimulationSnapHelper(private var layoutMode: BaseContentLayoutMan
         }
     }
 
-    fun snapToTargetExistingViewForIDLE() {
+    fun snapToTargetExistingView() {
         if (mRecyclerView == null) {
             return
         }
         val layoutManager = mRecyclerView!!.layoutManager ?: return
         val snapView = findSnapView(layoutManager) ?: return
         val snapDistance = calculateDistanceToFinalSnap(layoutManager, snapView)
+//        Log.d("test", "snapToTargetExistingView ; dx:" + snapDistance!![0].toString())
         if (snapDistance!![0] != 0 || snapDistance[1] != 0) {
 
             mRecyclerView!!.smoothScrollBy(snapDistance[0], snapDistance[1],

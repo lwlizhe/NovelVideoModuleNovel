@@ -70,8 +70,8 @@ abstract class BaseContentLayoutManager : LinearLayoutManager {
             offset += dx
             offset = getCurrentOffsetForRange()
             detachAndScrapAttachedViews(recycler)
-//            Log.d("offset", "currentOffset:$offset")
-//            Log.d("offset", "currentDx:$dx")
+            Log.d("offset", "currentOffset:$offset")
+            Log.d("offset", "currentDx:$dx")
             val resultOffset = fill(recycler, dx)
             recycleChildren(recycler)
 

@@ -20,12 +20,12 @@ class NovelSimulationRecyclerView : RecyclerView {
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         val layoutManager = layoutManager as BaseContentLayoutManager
 
+        layoutManager.dispatchTouchEvent(ev)
 
         if (layoutManager.isNeedConsumptionEvent(ev)) {
             return true
         }
 
-        layoutManager.dispatchTouchEvent(ev)
 
         return super.dispatchTouchEvent(ev)
     }
