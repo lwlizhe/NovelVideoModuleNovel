@@ -24,11 +24,7 @@ class SimulationHorizontallyContentAdapter<T>(context: Context) :
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         mRecyclerView = recyclerView
-        val layoutManager = SimulationHorizontallyContentLayoutManager(
-            context,
-            RecyclerView.HORIZONTAL,
-            false
-        )
+        val layoutManager = SimulationHorizontallyContentLayoutManager(context)
         mRecyclerView.layoutManager = layoutManager
     }
 

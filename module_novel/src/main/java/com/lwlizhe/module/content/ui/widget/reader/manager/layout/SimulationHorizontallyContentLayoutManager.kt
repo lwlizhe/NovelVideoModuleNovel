@@ -1,40 +1,29 @@
 package com.lwlizhe.module.content.ui.widget.reader.manager.layout
 
 import android.content.Context
+import android.graphics.Point
 import android.graphics.PointF
 import android.os.SystemClock
-import android.util.AttributeSet
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewOutlineProvider
+import android.util.Log
+import android.view.*
 import android.view.animation.LinearInterpolator
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
-import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_SETTLING
 import com.lwlizhe.module.content.ui.widget.reader.manager.snap.NovelPageSimulationSnapHelper
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class SimulationHorizontallyContentLayoutManager : BaseContentLayoutManager {
+class SimulationHorizontallyContentLayoutManager(context: Context) :
+    BaseContentLayoutManager(context) {
 
-    constructor(context: Context?) : super(context)
-    constructor(context: Context?, orientation: Int, reverseLayout: Boolean) : super(
-        context,
-        orientation,
-        reverseLayout
-    )
+    private var mVelocityTracker: VelocityTracker? = null
+    private var vc: ViewConfiguration = ViewConfiguration.get(context)
 
-    constructor(
-        context: Context?,
-        attrs: AttributeSet?,
-        defStyleAttr: Int,
-        defStyleRes: Int
-    ) : super(context, attrs, defStyleAttr, defStyleRes)
+    private var firstTouchPoint: Point = Point(0, 0)
 
-    var firstTouchPointF: PointF = PointF(0F, 0F)
-
-    //    var isNeedResetPos = false
-//    var extraOffset = 0
+    private var mMinFlingVelocity = vc.scaledMinimumFlingVelocity
+    private var mMaxFlingVelocity = vc.scaledMaximumFlingVelocity
 
     init {
         layoutMode = ContentLayoutMode.MODE_SIMULATION_HORIZONTALLY
@@ -94,124 +83,131 @@ class SimulationHorizontallyContentLayoutManager : BaseContentLayoutManager {
 
             setViewElevation(topView)
             addView(topView)
-//            layoutDecorated(
-//                topView,
-//                0,
-//                0, getDecoratedMeasuredWidth(topView),
-//                getDecoratedMeasuredHeight(topView)
-//            )
             layoutDecorated(
                 topView,
-                -offset % width,
                 0,
-                -offset % width + getDecoratedMeasuredWidth(topView),
+                0, getDecoratedMeasuredWidth(topView),
                 getDecoratedMeasuredHeight(topView)
             )
+//            layoutDecorated(
+//                topView,
+//                -offset % width,
+//                0,
+//                -offset % width + getDecoratedMeasuredWidth(topView),
+//                getDecoratedMeasuredHeight(topView)
+//            )
         }
 
         return distance
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent) {
+
+        if (mVelocityTracker == null) {
+            mVelocityTracker = VelocityTracker.obtain()
+        }
+        mVelocityTracker?.addMovement(ev)
+
+        val roundX = (ev.x + 0.5F).toInt()
+        val roundY = (ev.y + 0.5F).toInt()
+
         when (ev.action) {
             MotionEvent.ACTION_DOWN -> {
-                touchPointF.x = ev.x
-                touchPointF.y = ev.y
-                firstTouchPointF.x = ev.x
-                firstTouchPointF.y = ev.y
+                touchPoint.x = roundX
+                touchPoint.y = roundY
+                firstTouchPoint.x = roundX
+                firstTouchPoint.y = roundY
 
-                pathManager.setFirstTouchPoint(touchPointF)
+                pathManager.setFirstTouchPoint(touchPoint)
 
             }
 
             MotionEvent.ACTION_MOVE -> {
 
-                val isTurnNext = ev.x - firstTouchPointF.x <= 0
+                val isTurnNext = ev.x - firstTouchPoint.x <= 0
+                val dx = roundX - touchPoint.x
+                val dy = roundY - touchPoint.y
 
-                touchPointF.x = ev.x
-                touchPointF.y = ev.y
+                touchPoint.x = roundX
+                touchPoint.y = roundY
 
-//                if (currentOrientationState == STATE_TURN_PRE) {
-//                    mRecyclerView?.scrollTo(max(0, offset / width - 1) * width + ev.x.toInt(), 0)
-//                } else {
-
-                if (currentOrientationState == Companion.STATE_IDLE && !isTurnNext) {
-                    if (offset / width > 0) {
-                        currentOrientationState = STATE_TURN_PRE
-//                        scrollToPosition(max(0, offset / width - 1) * width + ev.x.toInt())
-
-//                        offset = max(0, offset / width - 1) * width + ev.x.toInt()
-//                        offset = getCurrentOffsetForRange()
-                        val i = -(max(0, offset / width - 1) * width + ev.x.toInt())
-                        mRecyclerView?.smoothScrollBy(i, 0, LinearInterpolator(), 300)
+                if (currentOrientationState == Companion.STATE_IDLE) {
+                    if (!isTurnNext) {
+                        if (offset / width > 0) {
+                            currentOrientationState = STATE_TURN_PRE
+//                            val i = (max(0, offset / width) * width + ev.x.toInt())-offset
+                            val i = (offset - (offset / width) * width) - (ev.x.toInt())
+                            pathManager.setFirstTouchPoint(Point(width/3,touchPoint.y))
+                            mRecyclerView?.smoothScrollBy(i, 0, LinearInterpolator(), 2000)
+                        }
+                    } else {
+                        if (offset / width < itemCount - 1) {
+                            currentOrientationState = STATE_TURN_NEXT
+                            val i = offset / width * width + (width - ev.x.toInt()) - offset
+                            pathManager.setFirstTouchPoint(Point(width/3*2,touchPoint.y))
+                            mRecyclerView?.smoothScrollBy(i, 0, LinearInterpolator(), 2000)
+                        }
                     }
+                } else {
+                    mRecyclerView?.scrollBy(-dx.toInt(), dy.toInt())
                 }
-//                }
-
-//                if (currentOrientationState == STATE_TURN_NEXT) {
-//                    mRecyclerView?.scrollTo(offset / width * width + (width - ev.x.toInt()), 0)
-//                } else {
-                if (currentOrientationState == Companion.STATE_IDLE && isTurnNext) {
-                    if (offset / width < itemCount - 1) {
-                        currentOrientationState = Companion.STATE_TURN_NEXT
-//                        scrollToPosition(offset / width * width + (width - ev.x.toInt()))
-
-//                        offset =offset / width * width + (width - ev.x.toInt())
-//                        offset = getCurrentOffsetForRange()
-                        val i = offset / width * width + (width - ev.x.toInt()) - offset
-                        mRecyclerView?.smoothScrollBy(i, 0, LinearInterpolator(), 300)
-                    }
-                }
-//                }
-
             }
 
             MotionEvent.ACTION_UP -> {
-                firstTouchPointF.x = 0F
-                firstTouchPointF.y = 0F
+                firstTouchPoint.x = 0
+                firstTouchPoint.y = 0
 
-                touchPointF.x = 0F
-                touchPointF.y = 0F
+                touchPoint.x = 0
+                touchPoint.y = 0
 
                 currentOrientationState = Companion.STATE_IDLE
-                if (currentScrollState == SCROLL_STATE_IDLE) {
-                    (snapHelper as NovelPageSimulationSnapHelper).snapToTargetExistingView()
+
+                mVelocityTracker?.computeCurrentVelocity(
+                    1000,
+                    mMaxFlingVelocity.toFloat()
+                )
+
+                var xVelocity = mVelocityTracker?.xVelocity ?: 0F
+                var yVelocity = mVelocityTracker?.yVelocity ?: 0F
+
+                if (!layoutMode.isCanScrollHorizontally || abs(xVelocity) < mMinFlingVelocity) {
+                    xVelocity = 0F
                 }
+                if (!layoutMode.isCanScrollVertically || abs(yVelocity) < mMinFlingVelocity) {
+                    yVelocity = 0F
+                }
+
+
+                (snapHelper as NovelPageSimulationSnapHelper).setCurrentVelocity(
+                    xVelocity,
+                    yVelocity
+                )
+//                mRecyclerView?.stopScroll()
+
+                if (xVelocity == 0F) {
+                    (snapHelper as NovelPageSimulationSnapHelper).snapToTargetExistingView()
+                } else {
+                    (snapHelper as NovelPageSimulationSnapHelper).snapFromFling(
+                        this,
+                        xVelocity.toInt(),
+                        yVelocity.toInt()
+                    )
+                }
+
+//                mRecyclerView?.smoothScrollBy(1024,0)
             }
         }
     }
 
     override fun isNeedConsumptionEvent(ev: MotionEvent): Boolean {
 
-        if (currentScrollState == SCROLL_STATE_SETTLING || isSmoothScrolling) {
-            return true
-        }
-
-        return false
+        return true
     }
 
     override fun scrollToPosition(position: Int) {
         offset = position
         offset = getCurrentOffsetForRange()
         super.scrollToPosition(offset)
-    }
-
-    override fun onScrollStateChanged(state: Int) {
-        super.onScrollStateChanged(state)
-
-        if (state == SCROLL_STATE_IDLE) {
-            if (currentOrientationState != STATE_IDLE) {
-                val now = SystemClock.uptimeMillis()
-                var downEvent: MotionEvent? = MotionEvent.obtain(
-                    now, now,
-                    MotionEvent.ACTION_DOWN, touchPointF.x, touchPointF.y, 0
-                )
-                mRecyclerView?.dispatchTouchEvent(downEvent)
-                (snapHelper as NovelPageSimulationSnapHelper).snapToTargetExistingView()
-            }
-
-        }
-//        Log.d("test", "onScrollStateChanged ; $state")
     }
 
     private fun resetViewElevation(view: View) {
@@ -245,5 +241,11 @@ class SimulationHorizontallyContentLayoutManager : BaseContentLayoutManager {
         super.onAttachedToWindow(view)
         snapHelper = NovelPageSimulationSnapHelper(layoutMode)
         snapHelper.attachToRecyclerView(view)
+    }
+
+    override fun onDetachedFromWindow(view: RecyclerView, recycler: RecyclerView.Recycler) {
+        super.onDetachedFromWindow(view, recycler)
+        mVelocityTracker?.recycle()
+        mVelocityTracker = null
     }
 }

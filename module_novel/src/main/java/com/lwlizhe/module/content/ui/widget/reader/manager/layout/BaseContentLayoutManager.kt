@@ -1,6 +1,7 @@
 package com.lwlizhe.module.content.ui.widget.reader.manager.layout
 
 import android.content.Context
+import android.graphics.Point
 import android.graphics.PointF
 import android.util.AttributeSet
 import android.util.Log
@@ -29,9 +30,9 @@ abstract class BaseContentLayoutManager : LinearLayoutManager {
     var pathManager: NovelContentPathManager = NovelContentPathManager()
     lateinit var snapHelper: SnapHelper
 
-    var currentScrollState=SCROLL_STATE_IDLE
+//    var currentScrollState=SCROLL_STATE_IDLE
     var currentOrientationState = STATE_IDLE
-    var touchPointF: PointF = PointF(0F, 0F)
+    var touchPoint: Point = Point(0, 0)
 
 
     constructor(context: Context?) : super(context)
@@ -70,8 +71,8 @@ abstract class BaseContentLayoutManager : LinearLayoutManager {
             offset += dx
             offset = getCurrentOffsetForRange()
             detachAndScrapAttachedViews(recycler)
-            Log.d("offset", "currentOffset:$offset")
-            Log.d("offset", "currentDx:$dx")
+//            Log.d("offset", "currentOffset:$offset")
+//            Log.d("offset", "currentDx:$dx")
             val resultOffset = fill(recycler, dx)
             recycleChildren(recycler)
 
@@ -141,7 +142,7 @@ abstract class BaseContentLayoutManager : LinearLayoutManager {
 
     override fun onScrollStateChanged(state: Int) {
         super.onScrollStateChanged(state)
-        currentScrollState=state
+//        currentScrollState=state
     }
 
     /************************************** 需实现的部分 *****************************************/

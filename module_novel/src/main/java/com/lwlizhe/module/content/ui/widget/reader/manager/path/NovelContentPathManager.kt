@@ -2,7 +2,9 @@ package com.lwlizhe.module.content.ui.widget.reader.manager.path
 
 import android.graphics.Canvas
 import android.graphics.Path
+import android.graphics.Point
 import android.graphics.PointF
+import android.util.Log
 import android.view.MotionEvent
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -20,16 +22,16 @@ class NovelContentPathManager {
     var height: Int = 0
 
     var currentPath: Path? = null
-    var touchPointF: PointF = PointF()
+    var touchPoint: Point = Point()
 
     var limitPath: Path? = null
 
-    fun setFirstTouchPoint(pointF: PointF){
-        touchPointF.x = pointF.x
-        touchPointF.y = pointF.y
+    fun setFirstTouchPoint(point: Point){
+        touchPoint.x = point.x
+        touchPoint.y = point.y
 
-        pathBuilder?.mTouchPointF?.x=pointF.x
-        pathBuilder?.mTouchPointF?.y=pointF.y
+        pathBuilder?.mTouchPoint?.x =point.x
+        pathBuilder?.mTouchPoint?.y=point.y
     }
 
     fun bindLayoutManager(manager: BaseContentLayoutManager, view: RecyclerView) {
@@ -63,9 +65,13 @@ class NovelContentPathManager {
 
     private fun buildPath(dx: Int, isOperateByUser: Boolean) {
         var result: Path? = limitPath
-        val calculatePath = pathBuilder?.buildPath(touchPointF, dx, width, height, isOperateByUser)
-        val isSuccess = calculatePath?.op(limitPath!!, Path.Op.INTERSECT) ?: false
-        if (calculatePath != null && isSuccess) {
+        val calculatePath = pathBuilder?.buildPath(touchPoint, dx, width, height, isOperateByUser)
+        Log.d("test","buildSuccess")
+//        val isSuccess = calculatePath?.op(limitPath!!, Path.Op.INTERSECT) ?: false
+        Log.d("test","op success")
+
+        if (calculatePath != null ) {
+//        if (calculatePath != null && isSuccess) {
             result = calculatePath
         }
         currentPath = result

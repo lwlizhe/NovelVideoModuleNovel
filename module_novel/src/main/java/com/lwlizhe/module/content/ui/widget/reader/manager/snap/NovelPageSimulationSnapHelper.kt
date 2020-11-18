@@ -3,15 +3,15 @@ package com.lwlizhe.module.content.ui.widget.reader.manager.snap
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
-import android.view.animation.LinearInterpolator
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.OrientationHelper
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.SmoothScroller.ScrollVectorProvider
 import com.lwlizhe.module.content.ui.widget.reader.manager.layout.BaseContentLayoutManager
-import com.lwlizhe.module.content.ui.widget.reader.manager.layout.SimulationHorizontallyContentLayoutManager
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 
 class NovelPageSimulationSnapHelper(private var layoutMode: BaseContentLayoutManager.ContentLayoutMode) :
     PagerSnapHelper() {
@@ -33,10 +33,10 @@ class NovelPageSimulationSnapHelper(private var layoutMode: BaseContentLayoutMan
         tempVelocityX = velocityX
         tempVelocityY = velocityY
 
-        return if (layoutManager.getChildAt(1) == null) {
-            layoutManager.getPosition(layoutManager.getChildAt(0)!!)
-        } else {
+        return if (layoutManager.getChildAt(1) != null) {
             layoutManager.getPosition(layoutManager.getChildAt(1)!!)
+        } else {
+            layoutManager.getPosition(layoutManager.getChildAt(0)!!)
         }
     }
 
@@ -81,26 +81,26 @@ class NovelPageSimulationSnapHelper(private var layoutMode: BaseContentLayoutMan
         var position = layoutManager.getPosition(targetView)
         val measurementWidth = helper.getDecoratedMeasurement(targetView)
 
-        var distance = 0
+        val distance: Int
+
         if (contentLayoutManager.currentOrientationState == BaseContentLayoutManager.STATE_IDLE) {
             distance = if (isForwardFling(layoutManager, tempVelocityX, tempVelocityY)) {
-                (position + 1) * measurementWidth - contentLayoutManager.offset
+                position * measurementWidth - contentLayoutManager.offset
             } else {
-                (position) * measurementWidth - contentLayoutManager.offset
+                min(
+                    layoutManager.itemCount - 1,
+                    position + 1
+                ) * measurementWidth - contentLayoutManager.offset
             }
         } else {
             distance =
                 if (contentLayoutManager.currentOrientationState == BaseContentLayoutManager.STATE_TURN_PRE)
-                    -(max(
-                        0,
-                        contentLayoutManager.offset / measurementWidth - 1
-                    ) * measurementWidth + contentLayoutManager.touchPointF.x.toInt())
+                    (contentLayoutManager.offset-position*measurementWidth)- (measurementWidth-contentLayoutManager.touchPoint.x)
                 else
-                    contentLayoutManager.offset / measurementWidth * measurementWidth + (measurementWidth - contentLayoutManager.touchPointF.x.toInt()) - contentLayoutManager.offset
+                    position * measurementWidth + (measurementWidth - contentLayoutManager.touchPoint.x) - contentLayoutManager.offset
         }
 
-
-        return distance
+        return if(abs(distance)<=2) 0 else distance
 
     }
 
@@ -159,6 +159,7 @@ class NovelPageSimulationSnapHelper(private var layoutMode: BaseContentLayoutMan
                         abs(dy)
                     )
                 )
+
                 if (time > 0) {
                     action.update(dx, dy, time, mDecelerateInterpolator)
                 }
@@ -171,6 +172,16 @@ class NovelPageSimulationSnapHelper(private var layoutMode: BaseContentLayoutMan
         }
     }
 
+    fun setCurrentVelocity(xVelocity: Float, yVelocity: Float) {
+        tempVelocityX = xVelocity.toInt()
+        tempVelocityY = yVelocity.toInt()
+    }
+
+    /**
+     * Snaps to a target view which currently exists in the attached [RecyclerView]. This
+     * method is used to snap the view when the [RecyclerView] is first attached; when
+     * snapping was triggered by a scroll and when the fling is at its final stages.
+     */
     fun snapToTargetExistingView() {
         if (mRecyclerView == null) {
             return
@@ -178,11 +189,36 @@ class NovelPageSimulationSnapHelper(private var layoutMode: BaseContentLayoutMan
         val layoutManager = mRecyclerView!!.layoutManager ?: return
         val snapView = findSnapView(layoutManager) ?: return
         val snapDistance = calculateDistanceToFinalSnap(layoutManager, snapView)
-//        Log.d("test", "snapToTargetExistingView ; dx:" + snapDistance!![0].toString())
         if (snapDistance!![0] != 0 || snapDistance[1] != 0) {
-
-            mRecyclerView!!.smoothScrollBy(snapDistance[0], snapDistance[1],
-                LinearInterpolator(),300)
+            mRecyclerView!!.smoothScrollBy(snapDistance[0], snapDistance[1])
         }
     }
+
+    /**
+     * Helper method to facilitate for snapping triggered by a fling.
+     *
+     * @param layoutManager The [RecyclerView.LayoutManager] associated with the attached
+     * [RecyclerView].
+     * @param velocityX     Fling velocity on the horizontal axis.
+     * @param velocityY     Fling velocity on the vertical axis.
+     *
+     * @return true if it is handled, false otherwise.
+     */
+    fun snapFromFling(
+        layoutManager: RecyclerView.LayoutManager, velocityX: Int,
+        velocityY: Int
+    ): Boolean {
+        if (layoutManager !is ScrollVectorProvider) {
+            return false
+        }
+        val smoothScroller = createScroller(layoutManager) ?: return false
+        val targetPosition = findTargetSnapPosition(layoutManager, velocityX, velocityY)
+        if (targetPosition == RecyclerView.NO_POSITION) {
+            return false
+        }
+        smoothScroller.targetPosition = targetPosition
+        layoutManager.startSmoothScroll(smoothScroller)
+        return true
+    }
+
 }
