@@ -7,6 +7,8 @@ import android.util.Log
 import com.lwlizhe.module.content.ui.widget.reader.manager.path.NovelContentPathManager
 import kotlin.math.abs
 import kotlin.math.hypot
+import kotlin.math.max
+import kotlin.math.min
 
 class SimulationPathBuilder(manager: NovelContentPathManager) : BasePathBuilder(manager) {
 
@@ -24,25 +26,31 @@ class SimulationPathBuilder(manager: NovelContentPathManager) : BasePathBuilder(
     var height = 0F
 
     override fun buildPath(
-        point: Point,
         dx: Int,
+        dy: Int,
         width: Int,
-        height: Int,
-        isOperateByUser: Boolean
+        height: Int
     ): Path? {
 
+
+        this.width = width.toFloat()
+        this.height = height.toFloat()
+
+
         mTouchPoint.x -= dx
+        mTouchPoint.y -= dy
+        mTouchPoint.x = max(mTouchPoint.x, 0)
+        mTouchPoint.y = min(mTouchPoint.y, height)
+//        mTouchPoint.y = point.y
 
         if (abs(width - mTouchPoint.x) < 5) {
             return null
         }
 
-        this.width = width.toFloat()
-        this.height = height.toFloat()
-
         var result = Path()
 
         calBezierPoint()
+
         result.reset()
 
         result.moveTo(0F, 0F)

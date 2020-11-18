@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.lwlizhe.module.content.ui.widget.reader.manager.layout.BaseContentLayoutManager
 import com.lwlizhe.module.content.ui.widget.reader.manager.path.builder.BasePathBuilder
-import com.lwlizhe.module.content.ui.widget.reader.manager.path.builder.CoverPathBuilder
 import com.lwlizhe.module.content.ui.widget.reader.manager.path.builder.SimulationPathBuilder
 
 class NovelContentPathManager {
@@ -22,16 +21,16 @@ class NovelContentPathManager {
     var height: Int = 0
 
     var currentPath: Path? = null
-    var touchPoint: Point = Point()
+    var lastTouchPoint: Point = Point()
 
     var limitPath: Path? = null
 
-    fun setFirstTouchPoint(point: Point){
-        touchPoint.x = point.x
-        touchPoint.y = point.y
+    fun setFirstTouchPoint(point: Point) {
+        lastTouchPoint.x = point.x
+        lastTouchPoint.y = point.y
 
-        pathBuilder?.mTouchPoint?.x =point.x
-        pathBuilder?.mTouchPoint?.y=point.y
+        pathBuilder?.mTouchPoint?.x = point.x
+        pathBuilder?.mTouchPoint?.y = point.y
     }
 
     fun bindLayoutManager(manager: BaseContentLayoutManager, view: RecyclerView) {
@@ -48,7 +47,7 @@ class NovelContentPathManager {
 
         when (layoutManager?.layoutMode?.mode ?: -1) {
             BaseContentLayoutManager.ContentLayoutMode.MODE_COVER_HORIZONTALLY.mode -> {
-                result = CoverPathBuilder(this)
+//                result = CoverPathBuilder(this)
             }
             BaseContentLayoutManager.ContentLayoutMode.MODE_SIMULATION_HORIZONTALLY.mode -> {
                 result = SimulationPathBuilder(this)
@@ -57,20 +56,36 @@ class NovelContentPathManager {
         return result
     }
 
+
     fun buildPath(dx: Int) {
-
-        buildPath(dx, false)
-
-    }
-
-    private fun buildPath(dx: Int, isOperateByUser: Boolean) {
         var result: Path? = limitPath
-        val calculatePath = pathBuilder?.buildPath(touchPoint, dx, width, height, isOperateByUser)
-        Log.d("test","buildSuccess")
-//        val isSuccess = calculatePath?.op(limitPath!!, Path.Op.INTERSECT) ?: false
-        Log.d("test","op success")
+        val touchPoint = layoutManager?.touchPoint
+        val xPos = touchPoint?.x ?: 0
+        val yPos = touchPoint?.y ?: 0
 
-        if (calculatePath != null ) {
+
+        var dy = if (lastTouchPoint.x + dx != xPos) {
+            ((lastTouchPoint.y - yPos).toFloat() / (lastTouchPoint.x - xPos).toFloat() * dx).toInt()
+        } else {
+            yPos - lastTouchPoint.y
+        }
+
+        if (xPos == 0 && yPos == 0) {
+            dy = 0
+        }
+
+
+        lastTouchPoint.x -= dx
+        lastTouchPoint.y -= dy
+        Log.d(
+            "test",
+            "${dy}"
+        )
+
+        val calculatePath = pathBuilder?.buildPath(dx, dy, width, height)
+//        val isSuccess = calculatePath?.op(limitPath!!, Path.Op.INTERSECT) ?: false
+
+        if (calculatePath != null) {
 //        if (calculatePath != null && isSuccess) {
             result = calculatePath
         }
