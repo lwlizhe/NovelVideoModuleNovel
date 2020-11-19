@@ -2,6 +2,7 @@ package com.lwlizhe.module.content.ui.widget.reader.adapter.holder
 
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import com.lwlizhe.module.R
 import com.lwlizhe.module.content.ui.widget.reader.manager.layout.BaseContentLayoutManager
 import com.lwlizhe.module.content.ui.widget.reader.manager.path.NovelContentPathManager
@@ -15,7 +16,9 @@ class SimulationContentViewHolder<T>(var containerView: NovelSimulationContainer
     }
 
     override fun setData(data: T, position: Int) {
-        itemView.findViewById<TextView>(R.id.tvw_content).text = data.toString()
+        val contentPage = itemView.findViewById<TextView>(R.id.tvw_content)
+        contentPage.text = data.toString()
+        contentPage.setOnClickListener { Toast.makeText(context,data.toString(),Toast.LENGTH_SHORT).show() }
     }
 
     fun bindPathManager(manager: NovelContentPathManager) {

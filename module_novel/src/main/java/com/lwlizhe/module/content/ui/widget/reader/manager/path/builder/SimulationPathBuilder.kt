@@ -25,41 +25,58 @@ class SimulationPathBuilder(manager: NovelContentPathManager) : BasePathBuilder(
     var width = 0F
     var height = 0F
 
-    var mBezierCalculatePoint=Point(0,0)
+    var cornerX = 0F
+    var cornerY = 0F
+
+    var isMiddlePath = false
+    var isFromTop = false
+
+
+    override fun setPathArea(width: Int, height: Int) {
+        this.width = width.toFloat()
+        this.height = height.toFloat()
+    }
+
+    override fun onFirstTouch(touchPoint: Point) {
+        cornerX = width
+        calculateCorner(touchPoint)
+
+        isMiddlePath = abs(touchPoint.y - (height / 2)) <= 100
+        mTouchPoint.x = touchPoint.x
+
+        if (isMiddlePath) {
+            mTouchPoint.y = if (isFromTop) {
+                1
+            } else {
+                (height - 1F).toInt()
+            }
+        } else {
+            mTouchPoint.y = (height / 4 * 3).toInt()
+        }
+    }
 
     override fun buildPath(
         x: Int,
-        y: Int,
-        width: Int,
-        height: Int
+        y: Int
     ): Path? {
 
+        mTouchPoint.x = x
+        if (!isMiddlePath) {
+            mTouchPoint.y = y
+        }
 
-        this.width = width.toFloat()
-        this.height = height.toFloat()
-
-
-        mBezierCalculatePoint.x=x
-        mBezierCalculatePoint.y=y
-//        mBezierCalculatePoint.x -= dx
-//        mBezierCalculatePoint.y -= dy
-//        mBezierCalculatePoint.x = min(max(mBezierCalculatePoint.x, 0), width)
-//        mBezierCalculatePoint.y = max(min(mBezierCalculatePoint.y, height), 0)
-//        mTouchPoint.y = point.y
-
-
-        if (abs(width - mBezierCalculatePoint.x) < 5) {
+        if (abs(width - mTouchPoint.x) < 5) {
             return null
         }
 
-        var result = Path()
-
         calBezierPoint()
-
+        val result = Path()
         result.reset()
 
-        result.moveTo(0F, 0F)
-        result.lineTo(width.toFloat(), 0F)
+        val baseY = if (isFromTop) 0F else height
+
+        result.moveTo(0F, height - baseY)
+        result.lineTo(cornerX, height - baseY)
         result.lineTo(mBezierStartRight.x, mBezierStartRight.y)
         result.quadTo(
             mBezierControlRight.x,
@@ -67,7 +84,7 @@ class SimulationPathBuilder(manager: NovelContentPathManager) : BasePathBuilder(
             mBezierEndRight.x,
             mBezierEndRight.y
         )
-        result.lineTo(mBezierCalculatePoint.x.toFloat(), mBezierCalculatePoint.y.toFloat())
+        result.lineTo(mTouchPoint.x.toFloat(), mTouchPoint.y.toFloat())
         result.lineTo(mBezierEndBottom.x, mBezierEndBottom.y)
         result.quadTo(
             mBezierControlBottom.x,
@@ -75,7 +92,7 @@ class SimulationPathBuilder(manager: NovelContentPathManager) : BasePathBuilder(
             mBezierStartBottom.x,
             mBezierStartBottom.y
         )
-        result.lineTo(0F, height.toFloat())
+        result.lineTo(0F, baseY)
         result.close()
 
         return result
@@ -85,56 +102,58 @@ class SimulationPathBuilder(manager: NovelContentPathManager) : BasePathBuilder(
      * 计算贝塞尔曲线控制点、起始点
      */
     private fun calBezierPoint() {
-        var mMiddleX = (mBezierCalculatePoint.x + width) / 2F
-        var mMiddleY = (mBezierCalculatePoint.y + height) / 2F
+        var mMiddleX = (mTouchPoint.x + cornerX) / 2F
+        var mMiddleY = (mTouchPoint.y + cornerY) / 2F
         mBezierControlBottom.x =
-            mMiddleX - (height - mMiddleY) * (height - mMiddleY) / (width - mMiddleX)
-        mBezierControlBottom.y = height.toFloat()
-        mBezierControlRight.x = width.toFloat()
-        //mBezierControlRight.y = mMiddleY - (width - mMiddleX) * (width - mMiddleX) / (height - mMiddleY);
+            mMiddleX - (cornerY - mMiddleY) * (cornerY - mMiddleY) / (cornerX - mMiddleX)
+        mBezierControlBottom.y = cornerY.toFloat()
+        mBezierControlRight.x = cornerX.toFloat()
+        //mBezierControlRight.y = mMiddleY - (cornerX - mMiddleX) * (cornerX - mMiddleX) / (cornerY - mMiddleY);
         mBezierControlRight.y =
-            mMiddleY - (width - mMiddleX) * (width - mMiddleX) / if (height - mMiddleY == 0f) 0.1f else height - mMiddleY
+            mMiddleY - (cornerX - mMiddleX) * (cornerX - mMiddleX) / if (cornerY - mMiddleY == 0f) 0.1f else cornerY - mMiddleY
 
-        mBezierStartBottom.x = mBezierControlBottom.x - (width - mBezierControlBottom.x) / 2
-        mBezierStartBottom.y = height.toFloat()
+        mBezierStartBottom.x = mBezierControlBottom.x - (cornerX - mBezierControlBottom.x) / 2
+        mBezierStartBottom.y = cornerY.toFloat()
 
         // 当mBezierStartBottom.x < 0或者mBezierStartBottom.x > 480时
         // 如果继续翻页，会出现BUG故在此限制
-        if (mBezierCalculatePoint.x > 0 && mBezierCalculatePoint.x < width) {
+        if (mTouchPoint.x > 0 && mTouchPoint.x < width) {
             if (mBezierStartBottom.x < 0 || mBezierStartBottom.x > width) {
                 if (mBezierStartBottom.x < 0) mBezierStartBottom.x = width - mBezierStartBottom.x
-                val f1 = abs(width - mBezierCalculatePoint.x)
+                val f1 = abs(cornerX - mTouchPoint.x)
                 val f2 = width * f1 / mBezierStartBottom.x
-                mBezierCalculatePoint.x = (abs(width - f2) + 0.5F).toInt()
+                mTouchPoint.x = (abs(cornerX - f2) + 0.5F).toInt()
                 val f3 =
-                    abs(width - mBezierCalculatePoint.x) * abs(height - mBezierCalculatePoint.y) / f1
-                mBezierCalculatePoint.y = (abs(height - f3) + 0.5F).toInt()
-                mMiddleX = (mBezierCalculatePoint.x + width) / 2
-                mMiddleY = (mBezierCalculatePoint.y + height) / 2
+                    abs(cornerX - mTouchPoint.x) * abs(cornerY - mTouchPoint.y) / f1
+                mTouchPoint.y = (abs(cornerY - f3) + 0.5F).toInt()
+                mMiddleX = (mTouchPoint.x + cornerX) / 2
+                mMiddleY = (mTouchPoint.y + cornerY) / 2
                 mBezierControlBottom.x =
-                    mMiddleX - (height - mMiddleY) * (height - mMiddleY) / (width - mMiddleX)
-                mBezierControlBottom.y = height.toFloat()
-                mBezierControlRight.x = width.toFloat()
-                //mBezierControlRight.y = mMiddleY - (width - mMiddleX) * (width - mMiddleX) / (height - mMiddleY);
-                val f5 = height - mMiddleY
+                    mMiddleX - (cornerY - mMiddleY) * (cornerY - mMiddleY) / (cornerX - mMiddleX)
+                mBezierControlBottom.y = cornerY.toFloat()
+                mBezierControlRight.x = cornerX.toFloat()
+                //mBezierControlRight.y = mMiddleY - (cornerX - mMiddleX) * (cornerX - mMiddleX) / (cornerY - mMiddleY);
+                val f5 = cornerY - mMiddleY
                 if (f5 == 0f) {
                     mBezierControlRight.y =
-                        mMiddleY - (width - mMiddleX) * (width - mMiddleX) / 0.1f
+                        mMiddleY - (cornerX - mMiddleX) * (cornerX - mMiddleX) / 0.1f
                 } else {
                     mBezierControlRight.y =
-                        mMiddleY - (width - mMiddleX) * (width - mMiddleX) / (height - mMiddleY)
+                        mMiddleY - (cornerX - mMiddleX) * (cornerX - mMiddleX) / (cornerY - mMiddleY)
                 }
-                mBezierStartBottom.x = mBezierControlBottom.x - (width - mBezierControlBottom.x) / 2
+                mBezierStartBottom.x =
+                    mBezierControlBottom.x - (cornerX - mBezierControlBottom.x) / 2
             }
         }
-        mBezierStartRight.x = width.toFloat()
-        mBezierStartRight.y = mBezierControlRight.y - (height - mBezierControlRight.y) / 2
+        mBezierStartRight.x = cornerX.toFloat()
+        mBezierStartRight.y = mBezierControlRight.y - (cornerY - mBezierControlRight.y) / 2
         val mTouchToCornerDis = hypot(
-            (mBezierCalculatePoint.x - width).toDouble(),
-            (mBezierCalculatePoint.y - height).toDouble()
+            (mTouchPoint.x - cornerX).toDouble(),
+            (mTouchPoint.y - cornerY).toDouble()
         ).toFloat()
 
-        val tempTouchPointF = PointF(mBezierCalculatePoint.x.toFloat(), mBezierCalculatePoint.y.toFloat())
+        val tempTouchPointF =
+            PointF(mTouchPoint.x.toFloat(), mTouchPoint.y.toFloat())
         mBezierEndBottom =
             getCross(tempTouchPointF, mBezierControlBottom, mBezierStartBottom, mBezierStartRight)
         mBezierEndRight =
@@ -173,5 +192,14 @@ class SimulationPathBuilder(manager: NovelContentPathManager) : BasePathBuilder(
         crossP.x = (b2 - b1) / (k1 - k2)
         crossP.y = k1 * crossP.x + b1
         return crossP
+    }
+
+    private fun calculateCorner(touchPoint: Point) {
+        isFromTop = touchPoint.y <= height / 2
+        cornerY = if (isFromTop) {
+            0F
+        } else {
+            height
+        }
     }
 }

@@ -15,10 +15,12 @@ open abstract class BasePathBuilder {
         this.pathManager = pathManager
     }
 
+    abstract fun setPathArea(width:Int,height:Int)
+
     abstract fun buildPath(
         x: Int,
-        y: Int,
-        width: Int,
-        height: Int
+        y: Int
     ): Path?
+
+    abstract fun onFirstTouch(touchPoint:Point)
 }

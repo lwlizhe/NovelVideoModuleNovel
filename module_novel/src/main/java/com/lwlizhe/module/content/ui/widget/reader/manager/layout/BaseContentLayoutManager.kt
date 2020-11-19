@@ -30,7 +30,7 @@ abstract class BaseContentLayoutManager : LinearLayoutManager {
     var pathManager: NovelContentPathManager = NovelContentPathManager()
     lateinit var snapHelper: SnapHelper
 
-//    var currentScrollState=SCROLL_STATE_IDLE
+    var currentScrollState=SCROLL_STATE_IDLE
     var currentOrientationState = STATE_IDLE
     var touchPoint: Point = Point(0, 0)
 
@@ -142,16 +142,16 @@ abstract class BaseContentLayoutManager : LinearLayoutManager {
 
     override fun onScrollStateChanged(state: Int) {
         super.onScrollStateChanged(state)
-//        currentScrollState=state
+        currentScrollState=state
     }
 
     /************************************** 需实现的部分 *****************************************/
 
     abstract fun fill(recycler: RecyclerView.Recycler, distance: Int): Int
 
-    abstract fun dispatchTouchEvent(ev: MotionEvent)
+    abstract fun onTouchEvent(ev: MotionEvent)
 
-    abstract fun isNeedConsumptionEvent(ev: MotionEvent): Boolean
+    abstract fun isNeedInterceptEvent(ev: MotionEvent): Boolean
 
 
 }

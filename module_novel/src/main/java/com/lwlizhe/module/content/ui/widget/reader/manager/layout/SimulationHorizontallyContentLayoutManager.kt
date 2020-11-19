@@ -2,16 +2,14 @@ package com.lwlizhe.module.content.ui.widget.reader.manager.layout
 
 import android.content.Context
 import android.graphics.Point
-import android.graphics.PointF
-import android.os.SystemClock
 import android.util.Log
 import android.view.*
 import android.view.animation.LinearInterpolator
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
+import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_SETTLING
 import com.lwlizhe.module.content.ui.widget.reader.manager.snap.NovelPageSimulationSnapHelper
 import kotlin.math.abs
-import kotlin.math.max
 import kotlin.math.min
 
 class SimulationHorizontallyContentLayoutManager(context: Context) :
@@ -24,6 +22,8 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
 
     private var mMinFlingVelocity = vc.scaledMinimumFlingVelocity
     private var mMaxFlingVelocity = vc.scaledMaximumFlingVelocity
+
+    private var isOperateByUser = false
 
     init {
         layoutMode = ContentLayoutMode.MODE_SIMULATION_HORIZONTALLY
@@ -90,19 +90,26 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
                 0, getDecoratedMeasuredWidth(topView),
                 getDecoratedMeasuredHeight(topView)
             )
-//            layoutDecorated(
-//                topView,
-//                -offset % width,
-//                0,
-//                -offset % width + getDecoratedMeasuredWidth(topView),
-//                getDecoratedMeasuredHeight(topView)
-//            )
         }
 
         return distance
     }
 
-    override fun dispatchTouchEvent(ev: MotionEvent) {
+    override fun onTouchEvent(ev: MotionEvent) {
+
+        if (currentScrollState == SCROLL_STATE_SETTLING && currentOrientationState == STATE_IDLE) {
+            return
+        }
+
+        if (ev.action != MotionEvent.ACTION_DOWN) {
+            if (!isOperateByUser) {
+                return
+            }
+        }
+
+        Log.d("event","$ev")
+        Log.d("event","currentScrollState : $currentScrollState , currentOrientationState : $currentOrientationState , isOperateByUser : $isOperateByUser")
+
 
         if (mVelocityTracker == null) {
             mVelocityTracker = VelocityTracker.obtain()
@@ -119,8 +126,7 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
                 firstTouchPoint.x = roundX
                 firstTouchPoint.y = roundY
 
-//                pathManager.setFirstTouchPoint(touchPoint)
-
+                isOperateByUser = true
             }
 
             MotionEvent.ACTION_MOVE -> {
@@ -139,7 +145,7 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
 //                            val i = (max(0, offset / width) * width + ev.x.toInt())-offset
                             val i = (offset - (offset / width) * width) - (ev.x.toInt())
                             pathManager.setFirstTouchPoint(Point(0, roundY))
-                            mRecyclerView?.smoothScrollBy(i, 0, LinearInterpolator(), 300)
+                            mRecyclerView?.smoothScrollBy(i, 0, LinearInterpolator(), 200)
                         }
                     } else {
                         if (offset / width < itemCount - 1) {
@@ -147,7 +153,7 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
                             val i = offset / width * width + (width - ev.x.toInt()) - offset
                             pathManager.setFirstTouchPoint(Point(width, roundY))
 
-                            mRecyclerView?.smoothScrollBy(i, 0, LinearInterpolator(), 300)
+                            mRecyclerView?.smoothScrollBy(i, 0, LinearInterpolator(), 200)
                         }
                     }
                 } else {
@@ -188,14 +194,16 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
                         yVelocity.toInt()
                     )
                 }
+
+                isOperateByUser = false
             }
         }
     }
 
     override fun onScrollStateChanged(state: Int) {
         super.onScrollStateChanged(state)
-        if(currentOrientationState== STATE_IDLE){
-            if(state== SCROLL_STATE_IDLE){
+        if (currentOrientationState == STATE_IDLE) {
+            if (state == SCROLL_STATE_IDLE) {
                 firstTouchPoint.x = 0
                 firstTouchPoint.y = 0
 
@@ -205,9 +213,8 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
         }
     }
 
-    override fun isNeedConsumptionEvent(ev: MotionEvent): Boolean {
-
-        return true
+    override fun isNeedInterceptEvent(ev: MotionEvent): Boolean {
+        return currentScrollState == RecyclerView.SCROLL_STATE_DRAGGING
     }
 
     override fun scrollToPosition(position: Int) {

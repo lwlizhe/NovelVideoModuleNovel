@@ -3,6 +3,7 @@ package com.lwlizhe.module.content.ui.widget.reader.manager.snap
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
+import android.view.animation.LinearInterpolator
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.OrientationHelper
 import androidx.recyclerview.widget.PagerSnapHelper
@@ -190,7 +191,7 @@ class NovelPageSimulationSnapHelper(private var layoutMode: BaseContentLayoutMan
         val snapView = findSnapView(layoutManager) ?: return
         val snapDistance = calculateDistanceToFinalSnap(layoutManager, snapView)
         if (snapDistance!![0] != 0 || snapDistance[1] != 0) {
-            mRecyclerView!!.smoothScrollBy(snapDistance[0], snapDistance[1])
+            mRecyclerView!!.smoothScrollBy(snapDistance[0], snapDistance[1],LinearInterpolator(),200)
         }
     }
 

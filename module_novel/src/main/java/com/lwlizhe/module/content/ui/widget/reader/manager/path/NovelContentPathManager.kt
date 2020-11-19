@@ -33,25 +33,13 @@ class NovelContentPathManager {
         isMiddlePath = abs(point.y - (height / 2)) <= 100
 
         lastTouchPoint.x = point.x
-        pathBuilder?.mTouchPoint?.x = point.x
-        if (pathBuilder is SimulationPathBuilder) {
-            (pathBuilder as SimulationPathBuilder).mBezierCalculatePoint.x = point.x
-        }
+        pathBuilder?.onFirstTouch(point)
 
         if (isMiddlePath) {
-            pathBuilder?.mTouchPoint?.y = height - 1
             lastTouchPoint.y = height - 1
-            if (pathBuilder is SimulationPathBuilder) {
-                (pathBuilder as SimulationPathBuilder).mBezierCalculatePoint.y = height - 1
-            }
         } else {
-            pathBuilder?.mTouchPoint?.y = height / 4 * 3
             lastTouchPoint.y = height / 4 * 3
-            if (pathBuilder is SimulationPathBuilder) {
-                (pathBuilder as SimulationPathBuilder).mBezierCalculatePoint.y = height / 4 * 3
-            }
         }
-
     }
 
     fun bindLayoutManager(manager: BaseContentLayoutManager, view: RecyclerView) {
@@ -84,8 +72,8 @@ class NovelContentPathManager {
         val xPos = touchPoint?.x ?: 0
         val yPos = touchPoint?.y ?: 0
 
-        lastTouchPoint.x-=dx
-        lastTouchPoint.y=yPos
+        lastTouchPoint.x -= dx
+        lastTouchPoint.y = yPos
 
 //        var dy = if (abs(lastTouchPoint.x - xPos)>3) {
 //            ((lastTouchPoint.y - yPos).toFloat() / (lastTouchPoint.x - xPos).toFloat() * dx).toInt()
@@ -109,7 +97,7 @@ class NovelContentPathManager {
 //            "dx : $dx , dy : $dy"
 //        )
 
-        val calculatePath = pathBuilder?.buildPath(lastTouchPoint.x, lastTouchPoint.y, width, height)
+        val calculatePath = pathBuilder?.buildPath(lastTouchPoint.x, lastTouchPoint.y)
 //        val isSuccess = calculatePath?.op(limitPath!!, Path.Op.INTERSECT) ?: false
 
         if (calculatePath != null) {
@@ -136,6 +124,8 @@ class NovelContentPathManager {
             limitPath!!.lineTo(0F, height.toFloat())
             limitPath!!.close()
         }
+
+        pathBuilder?.setPathArea(width, height)
     }
 
 }
