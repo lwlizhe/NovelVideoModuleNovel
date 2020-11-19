@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.lwlizhe.module.content.ui.widget.reader.manager.layout.BaseContentLayoutManager
 import com.lwlizhe.module.content.ui.widget.reader.manager.path.builder.BasePathBuilder
 import com.lwlizhe.module.content.ui.widget.reader.manager.path.builder.SimulationPathBuilder
+import kotlin.math.abs
 
 class NovelContentPathManager {
 
@@ -25,12 +26,32 @@ class NovelContentPathManager {
 
     var limitPath: Path? = null
 
-    fun setFirstTouchPoint(point: Point) {
-        lastTouchPoint.x = point.x
-        lastTouchPoint.y = point.y
+    var isMiddlePath = false
 
+    fun setFirstTouchPoint(point: Point) {
+
+        isMiddlePath = abs(point.y - (height / 2)) <= 100
+
+        lastTouchPoint.x = point.x
         pathBuilder?.mTouchPoint?.x = point.x
-        pathBuilder?.mTouchPoint?.y = point.y
+        if (pathBuilder is SimulationPathBuilder) {
+            (pathBuilder as SimulationPathBuilder).mBezierCalculatePoint.x = point.x
+        }
+
+        if (isMiddlePath) {
+            pathBuilder?.mTouchPoint?.y = height - 1
+            lastTouchPoint.y = height - 1
+            if (pathBuilder is SimulationPathBuilder) {
+                (pathBuilder as SimulationPathBuilder).mBezierCalculatePoint.y = height - 1
+            }
+        } else {
+            pathBuilder?.mTouchPoint?.y = height / 4 * 3
+            lastTouchPoint.y = height / 4 * 3
+            if (pathBuilder is SimulationPathBuilder) {
+                (pathBuilder as SimulationPathBuilder).mBezierCalculatePoint.y = height / 4 * 3
+            }
+        }
+
     }
 
     fun bindLayoutManager(manager: BaseContentLayoutManager, view: RecyclerView) {
@@ -63,26 +84,32 @@ class NovelContentPathManager {
         val xPos = touchPoint?.x ?: 0
         val yPos = touchPoint?.y ?: 0
 
+        lastTouchPoint.x-=dx
+        lastTouchPoint.y=yPos
 
-        var dy = if (lastTouchPoint.x + dx != xPos) {
-            ((lastTouchPoint.y - yPos).toFloat() / (lastTouchPoint.x - xPos).toFloat() * dx).toInt()
-        } else {
-            yPos - lastTouchPoint.y
-        }
+//        var dy = if (abs(lastTouchPoint.x - xPos)>3) {
+//            ((lastTouchPoint.y - yPos).toFloat() / (lastTouchPoint.x - xPos).toFloat() * dx).toInt()
+//        } else {
+//            yPos - lastTouchPoint.y
+//        }
+//
+//        if (xPos == 0 && yPos == 0) {
+//            dy = 0
+//        }
+//
+//
+//        lastTouchPoint.x -= dx
+//        lastTouchPoint.y -= dy
+//
+//        if (isMiddlePath) {
+//            dy = 0
+//        }
+//        Log.d(
+//            "path",
+//            "dx : $dx , dy : $dy"
+//        )
 
-        if (xPos == 0 && yPos == 0) {
-            dy = 0
-        }
-
-
-        lastTouchPoint.x -= dx
-        lastTouchPoint.y -= dy
-        Log.d(
-            "test",
-            "${dy}"
-        )
-
-        val calculatePath = pathBuilder?.buildPath(dx, dy, width, height)
+        val calculatePath = pathBuilder?.buildPath(lastTouchPoint.x, lastTouchPoint.y, width, height)
 //        val isSuccess = calculatePath?.op(limitPath!!, Path.Op.INTERSECT) ?: false
 
         if (calculatePath != null) {

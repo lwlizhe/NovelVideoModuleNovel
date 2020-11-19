@@ -138,30 +138,24 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
                             currentOrientationState = STATE_TURN_PRE
 //                            val i = (max(0, offset / width) * width + ev.x.toInt())-offset
                             val i = (offset - (offset / width) * width) - (ev.x.toInt())
-                            pathManager.setFirstTouchPoint(Point(1, height/4*3))
+                            pathManager.setFirstTouchPoint(Point(0, roundY))
                             mRecyclerView?.smoothScrollBy(i, 0, LinearInterpolator(), 300)
                         }
                     } else {
                         if (offset / width < itemCount - 1) {
                             currentOrientationState = STATE_TURN_NEXT
                             val i = offset / width * width + (width - ev.x.toInt()) - offset
-                            pathManager.setFirstTouchPoint(Point(width - 5, height/4*3))
+                            pathManager.setFirstTouchPoint(Point(width, roundY))
 
                             mRecyclerView?.smoothScrollBy(i, 0, LinearInterpolator(), 300)
                         }
                     }
                 } else {
-                    mRecyclerView?.scrollBy(-dx.toInt(), dy.toInt())
+                    mRecyclerView?.scrollBy(-dx, dy)
                 }
             }
 
             MotionEvent.ACTION_UP -> {
-                firstTouchPoint.x = 0
-                firstTouchPoint.y = 0
-
-                touchPoint.x = 0
-                touchPoint.y = 0
-
                 currentOrientationState = Companion.STATE_IDLE
 
                 mVelocityTracker?.computeCurrentVelocity(
@@ -184,7 +178,6 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
                     xVelocity,
                     yVelocity
                 )
-//                mRecyclerView?.stopScroll()
 
                 if (xVelocity == 0F) {
                     (snapHelper as NovelPageSimulationSnapHelper).snapToTargetExistingView()
@@ -195,8 +188,19 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
                         yVelocity.toInt()
                     )
                 }
+            }
+        }
+    }
 
-//                mRecyclerView?.smoothScrollBy(1024,0)
+    override fun onScrollStateChanged(state: Int) {
+        super.onScrollStateChanged(state)
+        if(currentOrientationState== STATE_IDLE){
+            if(state== SCROLL_STATE_IDLE){
+                firstTouchPoint.x = 0
+                firstTouchPoint.y = 0
+
+                touchPoint.x = 0
+                touchPoint.y = 0
             }
         }
     }

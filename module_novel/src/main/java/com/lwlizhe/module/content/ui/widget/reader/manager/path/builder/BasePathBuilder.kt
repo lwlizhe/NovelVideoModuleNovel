@@ -16,8 +16,8 @@ open abstract class BasePathBuilder {
     }
 
     abstract fun buildPath(
-        dx: Int,
-        dy: Int,
+        x: Int,
+        y: Int,
         width: Int,
         height: Int
     ): Path?
