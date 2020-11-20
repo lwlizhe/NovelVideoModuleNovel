@@ -1,39 +1,37 @@
-package com.lwlizhe.module.content.ui.widget.reader.manager.path
+package com.lwlizhe.module.content.ui.widget.reader.manager.canvas
 
-import android.graphics.Canvas
-import android.graphics.Path
-import android.graphics.Point
-import android.graphics.PointF
-import android.util.Log
-import android.view.MotionEvent
-import androidx.recyclerview.widget.ItemTouchHelper
+import android.graphics.*
 import androidx.recyclerview.widget.RecyclerView
 import com.lwlizhe.module.content.ui.widget.reader.manager.layout.BaseContentLayoutManager
-import com.lwlizhe.module.content.ui.widget.reader.manager.path.builder.BasePathBuilder
-import com.lwlizhe.module.content.ui.widget.reader.manager.path.builder.SimulationPathBuilder
+import com.lwlizhe.module.content.ui.widget.reader.manager.canvas.builder.BaseBuilder
+import com.lwlizhe.module.content.ui.widget.reader.manager.canvas.builder.SimulationBuilder
 import kotlin.math.abs
 
-class NovelContentPathManager {
+class NovelContentCanvasManager {
 
     var layoutManager: BaseContentLayoutManager? = null
-    var pathBuilder: BasePathBuilder? = null
+    var builder: BaseBuilder? = null
 
     var width: Int = 0
     var height: Int = 0
 
-    var currentPath: Path? = null
+    lateinit var tempBitmap: Bitmap
+    lateinit var tempCanvas: Canvas
+
+    var currentOutLinePath: Path? = null
     var lastTouchPoint: Point = Point()
 
     var limitPath: Path? = null
 
     var isMiddlePath = false
+    var isCanvasReady= false
 
     fun setFirstTouchPoint(point: Point) {
 
         isMiddlePath = abs(point.y - (height / 2)) <= 100
 
         lastTouchPoint.x = point.x
-        pathBuilder?.onFirstTouch(point)
+        builder?.onFirstTouch(point)
 
         if (isMiddlePath) {
             lastTouchPoint.y = height - 1
@@ -44,22 +42,22 @@ class NovelContentPathManager {
 
     fun bindLayoutManager(manager: BaseContentLayoutManager, view: RecyclerView) {
         layoutManager = manager
-        pathBuilder = buildPathBuilder()
+        builder = buildPathBuilder()
     }
 
     fun unBind(view: RecyclerView, recycler: RecyclerView.Recycler) {
         layoutManager = null
     }
 
-    private fun buildPathBuilder(): BasePathBuilder? {
-        var result: BasePathBuilder? = null
+    private fun buildPathBuilder(): BaseBuilder? {
+        var result: BaseBuilder? = null
 
         when (layoutManager?.layoutMode?.mode ?: -1) {
             BaseContentLayoutManager.ContentLayoutMode.MODE_COVER_HORIZONTALLY.mode -> {
 //                result = CoverPathBuilder(this)
             }
             BaseContentLayoutManager.ContentLayoutMode.MODE_SIMULATION_HORIZONTALLY.mode -> {
-                result = SimulationPathBuilder(this)
+                result = SimulationBuilder(this)
             }
         }
         return result
@@ -75,45 +73,41 @@ class NovelContentPathManager {
         lastTouchPoint.x -= dx
         lastTouchPoint.y = yPos
 
-//        var dy = if (abs(lastTouchPoint.x - xPos)>3) {
-//            ((lastTouchPoint.y - yPos).toFloat() / (lastTouchPoint.x - xPos).toFloat() * dx).toInt()
-//        } else {
-//            yPos - lastTouchPoint.y
-//        }
-//
-//        if (xPos == 0 && yPos == 0) {
-//            dy = 0
-//        }
-//
-//
-//        lastTouchPoint.x -= dx
-//        lastTouchPoint.y -= dy
-//
-//        if (isMiddlePath) {
-//            dy = 0
-//        }
-//        Log.d(
-//            "path",
-//            "dx : $dx , dy : $dy"
-//        )
 
-        val calculatePath = pathBuilder?.buildPath(lastTouchPoint.x, lastTouchPoint.y)
+        val calculatePath = builder?.buildPath(lastTouchPoint.x, lastTouchPoint.y)
 //        val isSuccess = calculatePath?.op(limitPath!!, Path.Op.INTERSECT) ?: false
 
         if (calculatePath != null) {
 //        if (calculatePath != null && isSuccess) {
             result = calculatePath
         }
-        currentPath = result
+        currentOutLinePath = result
     }
 
-    fun releasePath() {
-        currentPath = null
+    fun buildCanvas(baseCanvas: Canvas, canvasDrawCallback: OnNeedDrawCanvas) {
+        if(!isCanvasReady) {
+            canvasDrawCallback.onNeedDrawCanvas(tempCanvas)
+            isCanvasReady=true
+        }
+        builder?.buildCanvas(baseCanvas, tempCanvas, tempBitmap)
+    }
+
+    private fun pretreatmentCanvas(canvas: Canvas){
+        canvas.drawColor(Color.parseColor("#FFFFF0"))
+    }
+
+    fun clearCanvas() {
+        pretreatmentCanvas(tempCanvas)
+        isCanvasReady=false
     }
 
     fun onSizeChanged(newWidth: Int, newHeight: Int) {
         width = newWidth
         height = newHeight
+
+        tempBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        tempCanvas = Canvas(tempBitmap)
+        pretreatmentCanvas(tempCanvas)
 
         if (limitPath == null) {
             limitPath = Path()
@@ -125,7 +119,16 @@ class NovelContentPathManager {
             limitPath!!.close()
         }
 
-        pathBuilder?.setPathArea(width, height)
+        builder?.setPathArea(width, height)
+    }
+
+    interface OnNeedDrawCanvas {
+        fun onNeedDrawCanvas(copyCanvas: Canvas)
+    }
+
+    fun onRecycler() {
+        tempBitmap.recycle()
+        builder?.onDetached()
     }
 
 }

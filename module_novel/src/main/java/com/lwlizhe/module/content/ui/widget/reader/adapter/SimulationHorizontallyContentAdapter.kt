@@ -1,19 +1,14 @@
 package com.lwlizhe.module.content.ui.widget.reader.adapter
 
 import android.content.Context
-import android.graphics.Canvas
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.lwlizhe.module.R
 import com.lwlizhe.module.content.ui.widget.reader.adapter.holder.BaseContentViewHolder
-import com.lwlizhe.module.content.ui.widget.reader.adapter.holder.CoverContentViewHolder
 import com.lwlizhe.module.content.ui.widget.reader.adapter.holder.SimulationContentViewHolder
 import com.lwlizhe.module.content.ui.widget.reader.manager.layout.BaseContentLayoutManager
-import com.lwlizhe.module.content.ui.widget.reader.manager.layout.CoverHorizontallyContentLayoutManager
 import com.lwlizhe.module.content.ui.widget.reader.manager.layout.SimulationHorizontallyContentLayoutManager
-import com.lwlizhe.module.content.ui.widget.reader.manager.snap.NovelPageSimulationSnapHelper
-import com.lwlizhe.module.content.ui.widget.reader.manager.snap.NovelPageSnapHelper
 import com.lwlizhe.module.content.ui.widget.reader.view.NovelSimulationContainerLayout
 
 class SimulationHorizontallyContentAdapter<T>(context: Context) :
@@ -41,7 +36,7 @@ class SimulationHorizontallyContentAdapter<T>(context: Context) :
         container.addView(v)
 
         val holder = SimulationContentViewHolder<T>(container)
-        holder.bindPathManager((mRecyclerView.layoutManager as BaseContentLayoutManager).pathManager)
+        holder.bindPathManager((mRecyclerView.layoutManager as BaseContentLayoutManager).canvasManager)
         return holder
     }
 }

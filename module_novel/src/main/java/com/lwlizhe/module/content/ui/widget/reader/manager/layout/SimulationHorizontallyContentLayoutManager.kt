@@ -39,7 +39,7 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
             return 0
         }
 
-        pathManager.buildPath(dx)
+        canvasManager.buildPath(dx)
 
         return super.scrollHorizontallyBy(dx, recycler, state)
     }
@@ -144,14 +144,14 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
                             currentOrientationState = STATE_TURN_PRE
 //                            val i = (max(0, offset / width) * width + ev.x.toInt())-offset
                             val i = (offset - (offset / width) * width) - (ev.x.toInt())
-                            pathManager.setFirstTouchPoint(Point(0, roundY))
+                            canvasManager.setFirstTouchPoint(Point(0, roundY))
                             mRecyclerView?.smoothScrollBy(i, 0, LinearInterpolator(), 200)
                         }
                     } else {
                         if (offset / width < itemCount - 1) {
                             currentOrientationState = STATE_TURN_NEXT
                             val i = offset / width * width + (width - ev.x.toInt()) - offset
-                            pathManager.setFirstTouchPoint(Point(width, roundY))
+                            canvasManager.setFirstTouchPoint(Point(width, roundY))
 
                             mRecyclerView?.smoothScrollBy(i, 0, LinearInterpolator(), 200)
                         }
@@ -209,6 +209,8 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
 
                 touchPoint.x = 0
                 touchPoint.y = 0
+
+                canvasManager.clearCanvas()
             }
         }
     }

@@ -2,15 +2,13 @@ package com.lwlizhe.module.content.ui.widget.reader.manager.layout
 
 import android.content.Context
 import android.graphics.Point
-import android.graphics.PointF
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
 import androidx.recyclerview.widget.SnapHelper
-import com.lwlizhe.module.content.ui.widget.reader.manager.path.NovelContentPathManager
+import com.lwlizhe.module.content.ui.widget.reader.manager.canvas.NovelContentCanvasManager
 import kotlin.math.max
 import kotlin.math.min
 
@@ -27,7 +25,7 @@ abstract class BaseContentLayoutManager : LinearLayoutManager {
     var mRecyclerView: RecyclerView? = null
     var offset = 0
 
-    var pathManager: NovelContentPathManager = NovelContentPathManager()
+    var canvasManager: NovelContentCanvasManager = NovelContentCanvasManager()
     lateinit var snapHelper: SnapHelper
 
     var currentScrollState=SCROLL_STATE_IDLE
@@ -111,13 +109,13 @@ abstract class BaseContentLayoutManager : LinearLayoutManager {
     override fun onAttachedToWindow(view: RecyclerView) {
         super.onAttachedToWindow(view)
         mRecyclerView = view
-        pathManager.bindLayoutManager(this, view)
+        canvasManager.bindLayoutManager(this, view)
     }
 
     override fun onDetachedFromWindow(view: RecyclerView, recycler: RecyclerView.Recycler) {
         super.onDetachedFromWindow(view, recycler)
         mRecyclerView = null
-        pathManager.unBind(view, recycler)
+        canvasManager.unBind(view, recycler)
     }
 
     enum class ContentLayoutMode(

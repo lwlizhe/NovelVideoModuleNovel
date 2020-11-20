@@ -1,11 +1,9 @@
 package com.lwlizhe.module.content.ui.widget.reader.adapter.holder
 
-import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import com.lwlizhe.module.R
-import com.lwlizhe.module.content.ui.widget.reader.manager.layout.BaseContentLayoutManager
-import com.lwlizhe.module.content.ui.widget.reader.manager.path.NovelContentPathManager
+import com.lwlizhe.module.content.ui.widget.reader.manager.canvas.NovelContentCanvasManager
 import com.lwlizhe.module.content.ui.widget.reader.view.NovelSimulationContainerLayout
 
 class SimulationContentViewHolder<T>(var containerView: NovelSimulationContainerLayout) :
@@ -21,7 +19,7 @@ class SimulationContentViewHolder<T>(var containerView: NovelSimulationContainer
         contentPage.setOnClickListener { Toast.makeText(context,data.toString(),Toast.LENGTH_SHORT).show() }
     }
 
-    fun bindPathManager(manager: NovelContentPathManager) {
-        containerView.pathManager = manager
+    fun bindPathManager(manager: NovelContentCanvasManager) {
+        containerView.canvasManager = manager
     }
 }

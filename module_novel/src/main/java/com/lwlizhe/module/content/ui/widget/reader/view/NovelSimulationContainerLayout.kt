@@ -5,12 +5,11 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.util.AttributeSet
 import android.widget.FrameLayout
-import com.lwlizhe.module.content.ui.widget.reader.adapter.holder.BaseContentViewHolder
-import com.lwlizhe.module.content.ui.widget.reader.manager.path.NovelContentPathManager
+import com.lwlizhe.module.content.ui.widget.reader.manager.canvas.NovelContentCanvasManager
 
 class NovelSimulationContainerLayout : FrameLayout {
 
-    var pathManager: NovelContentPathManager? = null
+    var canvasManager: NovelContentCanvasManager? = null
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
@@ -22,18 +21,17 @@ class NovelSimulationContainerLayout : FrameLayout {
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        pathManager?.onSizeChanged(w, h)
+        canvasManager?.onSizeChanged(w, h)
     }
 
     override fun dispatchDraw(canvas: Canvas) {
-        if (pathManager?.layoutManager?.getChildAt(1) == this) {
-            pathManager?.currentPath?.let {
-                canvas.clipPath(pathManager?.currentPath!!)
-                canvas.drawColor(Color.parseColor("#99ff6666"))
-            } ?: let {
-                super.dispatchDraw(canvas)
-                canvas.drawColor(Color.parseColor("#9966ff66"))
-            }
+        if (canvasManager?.layoutManager?.getChildAt(1) == this) {
+            canvasManager?.buildCanvas(canvas,object : NovelContentCanvasManager.OnNeedDrawCanvas{
+                override fun onNeedDrawCanvas(copyCanvas: Canvas) {
+                    super@NovelSimulationContainerLayout.dispatchDraw(copyCanvas)
+//                    copyCanvas.drawColor(Color.parseColor("#FFB6C1"))
+                }
+            })
         } else {
             super.dispatchDraw(canvas)
         }

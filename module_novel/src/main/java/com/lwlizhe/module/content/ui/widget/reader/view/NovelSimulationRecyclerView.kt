@@ -28,14 +28,13 @@ class NovelSimulationRecyclerView : RecyclerView {
 
     override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
         val layoutManager = layoutManager as BaseContentLayoutManager
-
         return layoutManager.isNeedInterceptEvent(event)
     }
 
     override fun onTouchEvent(e: MotionEvent): Boolean {
         val layoutManager = layoutManager as BaseContentLayoutManager
-
         layoutManager.onTouchEvent(e)
         return true
     }
+
 }
