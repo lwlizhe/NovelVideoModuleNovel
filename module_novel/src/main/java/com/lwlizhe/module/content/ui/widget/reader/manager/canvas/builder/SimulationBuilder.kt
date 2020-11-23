@@ -1,7 +1,6 @@
 package com.lwlizhe.module.content.ui.widget.reader.manager.canvas.builder
 
 import android.graphics.*
-import android.util.Log
 import com.lwlizhe.module.content.ui.widget.reader.manager.canvas.NovelContentCanvasManager
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -103,9 +102,8 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
     }
 
     override fun buildCanvas(baseCanvas: Canvas, copyCanvas: Canvas, copyBitmap: Bitmap) {
-        test(baseCanvas, copyCanvas, copyBitmap)
-//        drawBackCurlyArea(baseCanvas, copyCanvas, copyBitmap)
-//        drawContent(baseCanvas, copyCanvas, copyBitmap)
+        drawBackCurlyArea(baseCanvas, copyCanvas, copyBitmap)
+        drawContent(baseCanvas, copyCanvas, copyBitmap)
     }
 
     /**
@@ -139,8 +137,8 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
 
         baseCanvas.save()
         baseCanvas.clipPath(contentPath)
-        baseCanvas.drawColor(Color.parseColor("#FFB6C1"))
-//        baseCanvas.drawBitmap(copyBitmap, 0F, 0F, paint)
+//        baseCanvas.drawColor(Color.parseColor("#FFB6C1"))
+        baseCanvas.drawBitmap(copyBitmap, 0F, 0F, paint)
         baseCanvas.restore()
     }
 
@@ -152,87 +150,44 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
         val backAreaPath = Path()
         backAreaPath.reset()
 
-        backAreaPath.moveTo(mTouchPoint.x.toFloat(),mTouchPoint.y.toFloat())
-        backAreaPath.lineTo(mBezierVertexBottom.x,mBezierVertexBottom.y)
-        backAreaPath.lineTo(mBezierVertexRight.x,mBezierVertexRight.y)
+        backAreaPath.moveTo(mTouchPoint.x.toFloat(), mTouchPoint.y.toFloat())
+        backAreaPath.lineTo(mBezierVertexBottom.x, mBezierVertexBottom.y)
+        backAreaPath.lineTo(mBezierVertexRight.x, mBezierVertexRight.y)
         backAreaPath.close()
 
-        val backAreaContentPath=Path()
-        backAreaContentPath.moveTo(mBezierControlRight.x,mBezierControlRight.y)
-        backAreaContentPath.lineTo(cornerX,cornerY)
-        backAreaContentPath.lineTo(mBezierControlBottom.x,mBezierControlBottom.y)
+        val backAreaContentPath = Path()
 
-        baseCanvas.save()
-        baseCanvas.scale(-1F,1F,(mBezierControlRight.x + mBezierControlBottom.x) / 2f,(mBezierControlRight.y + mBezierControlBottom.y) / 2f)
-        val degress = Math.toDegrees(
+        backAreaContentPath.reset()
+        backAreaContentPath.moveTo(mBezierControlRight.x, mBezierControlRight.y)
+        backAreaContentPath.lineTo(cornerX, cornerY)
+        backAreaContentPath.lineTo(mBezierControlBottom.x, mBezierControlBottom.y)
+        backAreaContentPath.close()
+
+        val angle = 2*Math.toDegrees(
             atan2(
-                (mBezierControlRight.y - mBezierControlBottom.y).toDouble(),
-                (mBezierControlRight.x - mBezierControlBottom.x).toDouble()
+                (cornerY - mBezierControlRight.y).toDouble(),
+                (cornerX - mBezierControlBottom.x).toDouble()
             )
-        )
-        Log.d("back","$degress")
-        baseCanvas.rotate((-degress).toFloat(),mBezierControlBottom.x,mBezierControlBottom.y)
-
-//        baseCanvas.translate(
-//            (mBezierControlRight.x + mBezierControlBottom.x) / 2f,
-//            (mBezierControlRight.y + mBezierControlBottom.y) / 2f
-//        )
-//        baseCanvas.scale(-1f, 1f)
-//        baseCanvas.translate(
-//            (mBezierControlRight.x - mBezierControlBottom.x) / 2.toFloat(),
-//            (mBezierControlRight.y - mBezierControlBottom.y) / 2.toFloat()
-//        )
-//        val degress = Math.toDegrees(
-//            atan2(
-//                (mBezierControlRight.y - mBezierControlBottom.y).toDouble(),
-//                (mBezierControlRight.x - mBezierControlBottom.x).toDouble()
-//            )
-//        ).toFloat()
-//        baseCanvas.rotate(-degress)
-//        baseCanvas.translate(-(mBezierControlBottom.x), -mBezierControlBottom.y)
-
-        baseCanvas.clipPath(backAreaContentPath)
+        ).toFloat()-180F
+        baseCanvas.save()
+        baseCanvas.clipPath(backAreaPath)
         baseCanvas.drawColor(Color.parseColor("#90EE90"))
-//        baseCanvas.drawBitmap(copyBitmap, 0f, 0f, paint)
-
-        baseCanvas.restore()
-
-    }
-
-    private fun test(baseCanvas: Canvas, copyCanvas: Canvas, copyBitmap: Bitmap){
-        val point1 = Point(cornerX.toInt(), cornerY.toInt())
-
-       var x1 = mBezierControlBottom.x
-       var y1 = mBezierControlRight.y
-
-        var testPath=Path()
-
-        testPath.reset()
-        testPath.moveTo(point1.x.toFloat(), point1.y - y1.toFloat())
-        testPath.lineTo(point1.x.toFloat(), point1.y.toFloat())
-        testPath.lineTo(point1.x - x1.toFloat(), point1.y.toFloat())
-        testPath.close()
-
         baseCanvas.save()
 
-        baseCanvas.translate(point1.x - x1 / 2f, point1.y - y1 / 2f)
-        baseCanvas.scale(-1f, 1f)
-        baseCanvas.translate(x1 / 2.toFloat(), y1 / 2.toFloat())
-        val degress = Math.toDegrees(
-            Math.atan2(
-                y1.toDouble(),
-                x1.toDouble()
-            )
-        ).toFloat()
-        baseCanvas.rotate(-degress)
-        baseCanvas.translate(-(point1.x - x1).toFloat(), -point1.y.toFloat())
+        baseCanvas.translate(mBezierControlBottom.x, mBezierControlBottom.y)
+        baseCanvas.scale(-1F, 1F)
+        baseCanvas.rotate(angle)
+        baseCanvas.translate(-mBezierControlBottom.x, -mBezierControlBottom.y)
 
 //        mPaint.setColorFilter(mColorMatrixFilter)
-        baseCanvas.clipPath(testPath)
+        baseCanvas.clipPath(backAreaContentPath)
 //        baseCanvas.drawColor(Color.parseColor("#90EE90"))
-//        baseCanvas.drawBitmap(copyBitmap, 0f, 0f, paint)
+        baseCanvas.drawBitmap(copyBitmap, 0f, 0f, paint)
 
         baseCanvas.restore()
+
+        baseCanvas.restore()
+
 
     }
 

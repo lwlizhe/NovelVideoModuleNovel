@@ -107,10 +107,6 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
             }
         }
 
-        Log.d("event","$ev")
-        Log.d("event","currentScrollState : $currentScrollState , currentOrientationState : $currentOrientationState , isOperateByUser : $isOperateByUser")
-
-
         if (mVelocityTracker == null) {
             mVelocityTracker = VelocityTracker.obtain()
         }
