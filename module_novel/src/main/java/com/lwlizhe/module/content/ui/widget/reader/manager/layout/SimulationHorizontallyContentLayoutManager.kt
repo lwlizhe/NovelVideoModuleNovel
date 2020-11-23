@@ -1,8 +1,9 @@
 package com.lwlizhe.module.content.ui.widget.reader.manager.layout
 
 import android.content.Context
+import android.graphics.Outline
 import android.graphics.Point
-import android.util.Log
+import android.os.Build
 import android.view.*
 import android.view.animation.LinearInterpolator
 import androidx.recyclerview.widget.RecyclerView
@@ -211,8 +212,12 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
         }
     }
 
-    override fun isNeedInterceptEvent(ev: MotionEvent): Boolean {
+    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         return currentScrollState == RecyclerView.SCROLL_STATE_DRAGGING
+    }
+
+    override fun isNeedInterceptEvent(ev: MotionEvent): Boolean{
+        return true
     }
 
     override fun scrollToPosition(position: Int) {
@@ -233,11 +238,15 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
         view.elevation = 50F
         view.clipToOutline = true
         view.outlineProvider = ViewOutlineProvider.BOUNDS
-//        view.outlineProvider = pathManager.currentPath?.let {
+//        view.outlineProvider = canvasManager.currentOutLinePath?.let {
 //            object : ViewOutlineProvider() {
 //                override fun getOutline(view: View?, outline: Outline?) {
 //
-//                    outline?.setConvexPath(pathManager.currentPath!!)
+//                    if (Build.VERSION.SDK_INT >= 30) {
+//                        outline?.setPath(canvasManager.currentOutLinePath!!)
+//                    }else{
+//                        outline?.setConvexPath(canvasManager.currentOutLinePath!!)
+//                    }
 //
 //                }
 //            }

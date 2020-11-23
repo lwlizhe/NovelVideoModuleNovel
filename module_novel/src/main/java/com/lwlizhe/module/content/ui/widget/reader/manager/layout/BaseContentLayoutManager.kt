@@ -3,6 +3,7 @@ package com.lwlizhe.module.content.ui.widget.reader.manager.layout
 import android.content.Context
 import android.graphics.Point
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -69,8 +70,8 @@ abstract class BaseContentLayoutManager : LinearLayoutManager {
             offset += dx
             offset = getCurrentOffsetForRange()
             detachAndScrapAttachedViews(recycler)
-//            Log.d("offset", "currentOffset:$offset")
-//            Log.d("offset", "currentDx:$dx")
+            Log.d("offset", "currentOffset:$offset")
+            Log.d("offset", "currentDx:$dx")
             val resultOffset = fill(recycler, dx)
             recycleChildren(recycler)
 
@@ -143,13 +144,18 @@ abstract class BaseContentLayoutManager : LinearLayoutManager {
         currentScrollState=state
     }
 
+    public open fun isNeedInterceptEvent(ev: MotionEvent): Boolean{
+        return false
+    }
+
     /************************************** 需实现的部分 *****************************************/
 
     abstract fun fill(recycler: RecyclerView.Recycler, distance: Int): Int
 
     abstract fun onTouchEvent(ev: MotionEvent)
 
-    abstract fun isNeedInterceptEvent(ev: MotionEvent): Boolean
+    abstract fun onInterceptTouchEvent(ev: MotionEvent): Boolean
+
 
 
 }

@@ -85,6 +85,10 @@ class CoverHorizontallyContentLayoutManager : BaseContentLayoutManager {
 
     }
 
+    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+        return false
+    }
+
     override fun isNeedInterceptEvent(ev: MotionEvent): Boolean {
         return false
     }

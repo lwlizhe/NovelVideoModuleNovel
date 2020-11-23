@@ -1,10 +1,9 @@
 package com.lwlizhe.module.content.ui.widget.reader.manager.canvas.builder
 
 import android.graphics.*
+import android.util.Log
 import com.lwlizhe.module.content.ui.widget.reader.manager.canvas.NovelContentCanvasManager
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.hypot
+import kotlin.math.*
 
 class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manager) {
 
@@ -33,8 +32,6 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
     override fun setPathArea(width: Int, height: Int) {
         this.width = width.toFloat()
         this.height = height.toFloat()
-
-
     }
 
     override fun onFirstTouch(touchPoint: Point) {
@@ -67,6 +64,11 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
         if (!isMiddlePath) {
             mTouchPoint.y = y
         }
+
+        mTouchPoint.x = max(1F, min(mTouchPoint.x.toFloat(), width)-1).toInt()
+        mTouchPoint.y = max(1F, min(mTouchPoint.y.toFloat(), height)-1).toInt()
+
+        Log.d("bezier", "buildPath touchPoint : $mTouchPoint")
 
         if (abs(width - mTouchPoint.x) < 5) {
             return null
@@ -163,12 +165,12 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
         backAreaContentPath.lineTo(mBezierControlBottom.x, mBezierControlBottom.y)
         backAreaContentPath.close()
 
-        val angle = 2*Math.toDegrees(
+        val angle = 2 * Math.toDegrees(
             atan2(
                 (cornerY - mBezierControlRight.y).toDouble(),
                 (cornerX - mBezierControlBottom.x).toDouble()
             )
-        ).toFloat()-180F
+        ).toFloat() - 180F
         baseCanvas.save()
         baseCanvas.clipPath(backAreaPath)
         baseCanvas.drawColor(Color.parseColor("#90EE90"))
@@ -182,7 +184,7 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
 //        mPaint.setColorFilter(mColorMatrixFilter)
         baseCanvas.clipPath(backAreaContentPath)
 //        baseCanvas.drawColor(Color.parseColor("#90EE90"))
-        baseCanvas.drawBitmap(copyBitmap, 0f, 0f, paint)
+//        baseCanvas.drawBitmap(copyBitmap, 0f, 0f, paint)
 
         baseCanvas.restore()
 
@@ -216,9 +218,14 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
                 val f1 = abs(cornerX - mTouchPoint.x)
                 val f2 = width * f1 / mBezierStartBottom.x
                 mTouchPoint.x = (abs(cornerX - f2) + 0.5F).toInt()
+                mTouchPoint.x = max(1, min(mTouchPoint.x, width.toInt()-1))
                 val f3 =
                     abs(cornerX - mTouchPoint.x) * abs(cornerY - mTouchPoint.y) / f1
                 mTouchPoint.y = (abs(cornerY - f3) + 0.5F).toInt()
+                mTouchPoint.y = max(1, min(mTouchPoint.y, height.toInt()-1))
+
+                Log.d("bezier", "calBezierPoint touchPoint : $mTouchPoint")
+
                 mMiddleX = (mTouchPoint.x + cornerX) / 2
                 mMiddleY = (mTouchPoint.y + cornerY) / 2
                 mBezierControlBottom.x =
@@ -256,7 +263,8 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
          * mBezierVertexBottom.x 推导
 		 * ((mBezierStartBottom.x+mBezierEndBottom.x)/2+mBezierControlBottom.x)/2 化简等价于
 		 * (mBezierStartBottom.x+ 2*mBezierControlBottom.x+mBezierEndBottom.x) / 4
-		 */mBezierVertexBottom.x =
+		 */
+        mBezierVertexBottom.x =
             (mBezierStartBottom.x + 2 * mBezierControlBottom.x + mBezierEndBottom.x) / 4
         mBezierVertexBottom.y =
             (2 * mBezierControlBottom.y + mBezierStartBottom.y + mBezierEndBottom.y) / 4
@@ -264,6 +272,16 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
             (mBezierStartRight.x + 2 * mBezierControlRight.x + mBezierEndRight.x) / 4
         mBezierVertexRight.y =
             (2 * mBezierControlRight.y + mBezierStartRight.y + mBezierEndRight.y) / 4
+
+
+        Log.d(
+            "bezier",
+            "touchPoint $mTouchPoint , controller right : $mBezierControlRight , controller bottom : $mBezierControlBottom , start right : $mBezierStartRight , start bottom : $mBezierStartBottom , end right : $mBezierEndRight , end bottom : $mBezierEndBottom  vertex right : $mBezierVertexRight , vertex bottom : $mBezierVertexBottom"
+        )
+        Log.d(
+            "bezier",
+            "---------------------------------------------------------------------------------"
+        )
     }
 
     /**

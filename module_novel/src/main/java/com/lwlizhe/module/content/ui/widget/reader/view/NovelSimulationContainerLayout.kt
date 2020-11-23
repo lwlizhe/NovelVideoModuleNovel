@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.util.AttributeSet
+import android.util.Log
 import android.widget.FrameLayout
 import com.lwlizhe.module.content.ui.widget.reader.manager.canvas.NovelContentCanvasManager
 
@@ -29,7 +30,6 @@ class NovelSimulationContainerLayout : FrameLayout {
             canvasManager?.buildCanvas(canvas,object : NovelContentCanvasManager.OnNeedDrawCanvas{
                 override fun onNeedDrawCanvas(copyCanvas: Canvas) {
                     super@NovelSimulationContainerLayout.dispatchDraw(copyCanvas)
-//                    copyCanvas.drawColor(Color.parseColor("#FFB6C1"))
                 }
             })
         } else {

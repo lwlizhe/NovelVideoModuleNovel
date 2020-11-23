@@ -12,6 +12,7 @@ import com.lwlizhe.module.content.ui.test.simulation.NovelContentTest2LayoutMana
 import com.lwlizhe.module.content.ui.test.simulation.NovelContentTestLayoutManager
 import com.lwlizhe.module.content.ui.test.simulation.NovelContentTestSimulationLayoutManager
 import com.lwlizhe.module.content.ui.test.simulation.NovelPageTestSimulationSnapHelper
+import com.lwlizhe.module.content.ui.widget.reader.adapter.CoverHorizontallyContentAdapter
 import com.lwlizhe.module.content.ui.widget.reader.adapter.SimulationHorizontallyContentAdapter
 import com.lwlizhe.module.content.ui.widget.reader.manager.layout.BaseContentLayoutManager
 import com.lwlizhe.module.content.ui.widget.reader.manager.layout.CoverHorizontallyContentLayoutManager

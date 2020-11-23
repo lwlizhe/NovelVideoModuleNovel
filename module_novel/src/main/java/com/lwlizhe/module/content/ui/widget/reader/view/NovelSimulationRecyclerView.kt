@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
+import androidx.core.util.rangeTo
 import androidx.recyclerview.widget.RecyclerView
 import com.lwlizhe.module.content.ui.widget.reader.manager.layout.BaseContentLayoutManager
 import java.lang.RuntimeException
@@ -26,15 +27,24 @@ class NovelSimulationRecyclerView : RecyclerView {
         }
     }
 
-    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+    override fun onInterceptTouchEvent(e: MotionEvent): Boolean {
         val layoutManager = layoutManager as BaseContentLayoutManager
-        return layoutManager.isNeedInterceptEvent(event)
+        return if (layoutManager.isNeedInterceptEvent(e)) {
+            layoutManager.onInterceptTouchEvent(e)
+            true
+        } else {
+            super.onTouchEvent(e)
+        }
     }
 
     override fun onTouchEvent(e: MotionEvent): Boolean {
         val layoutManager = layoutManager as BaseContentLayoutManager
-        layoutManager.onTouchEvent(e)
-        return true
+        return if (layoutManager.isNeedInterceptEvent(e)) {
+            layoutManager.onTouchEvent(e)
+            true
+        } else {
+            super.onTouchEvent(e)
+        }
     }
 
 }
