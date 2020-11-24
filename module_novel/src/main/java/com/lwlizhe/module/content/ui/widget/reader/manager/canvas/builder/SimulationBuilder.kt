@@ -28,10 +28,18 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
 
     var paint = Paint()
 
+    var limitPath = Path()
 
     override fun setPathArea(width: Int, height: Int) {
         this.width = width.toFloat()
         this.height = height.toFloat()
+
+        limitPath.reset()
+        limitPath.moveTo(0F, 0F)
+        limitPath.lineTo(this.width, 0F)
+        limitPath.lineTo(this.width, this.height)
+        limitPath.lineTo(0F, this.height)
+        limitPath.close()
     }
 
     override fun onFirstTouch(touchPoint: Point) {
@@ -65,8 +73,8 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
             mTouchPoint.y = y
         }
 
-        mTouchPoint.x = max(1F, min(mTouchPoint.x.toFloat(), width)-1).toInt()
-        mTouchPoint.y = max(1F, min(mTouchPoint.y.toFloat(), height)-1).toInt()
+        mTouchPoint.x = max(1F, min(mTouchPoint.x.toFloat(), width) - 1).toInt()
+        mTouchPoint.y = max(1F, min(mTouchPoint.y.toFloat(), height) - 1).toInt()
 
         Log.d("bezier", "buildPath touchPoint : $mTouchPoint")
 
@@ -137,11 +145,9 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
         contentPath.lineTo(0F, baseY)
         contentPath.close()
 
-        baseCanvas.save()
         baseCanvas.clipPath(contentPath)
 //        baseCanvas.drawColor(Color.parseColor("#FFB6C1"))
         baseCanvas.drawBitmap(copyBitmap, 0F, 0F, paint)
-        baseCanvas.restore()
     }
 
     /**
@@ -171,10 +177,11 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
                 (cornerX - mBezierControlBottom.x).toDouble()
             )
         ).toFloat() - 180F
+
         baseCanvas.save()
+
         baseCanvas.clipPath(backAreaPath)
         baseCanvas.drawColor(Color.parseColor("#90EE90"))
-        baseCanvas.save()
 
         baseCanvas.translate(mBezierControlBottom.x, mBezierControlBottom.y)
         baseCanvas.scale(-1F, 1F)
@@ -184,9 +191,7 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
 //        mPaint.setColorFilter(mColorMatrixFilter)
         baseCanvas.clipPath(backAreaContentPath)
 //        baseCanvas.drawColor(Color.parseColor("#90EE90"))
-//        baseCanvas.drawBitmap(copyBitmap, 0f, 0f, paint)
-
-        baseCanvas.restore()
+        baseCanvas.drawBitmap(copyBitmap, 0f, 0f, paint)
 
         baseCanvas.restore()
 
@@ -218,11 +223,11 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
                 val f1 = abs(cornerX - mTouchPoint.x)
                 val f2 = width * f1 / mBezierStartBottom.x
                 mTouchPoint.x = (abs(cornerX - f2) + 0.5F).toInt()
-                mTouchPoint.x = max(1, min(mTouchPoint.x, width.toInt()-1))
+                mTouchPoint.x = max(1, min(mTouchPoint.x, width.toInt() - 1))
                 val f3 =
                     abs(cornerX - mTouchPoint.x) * abs(cornerY - mTouchPoint.y) / f1
                 mTouchPoint.y = (abs(cornerY - f3) + 0.5F).toInt()
-                mTouchPoint.y = max(1, min(mTouchPoint.y, height.toInt()-1))
+                mTouchPoint.y = max(1, min(mTouchPoint.y, height.toInt() - 1))
 
                 Log.d("bezier", "calBezierPoint touchPoint : $mTouchPoint")
 
@@ -300,8 +305,15 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
         val b1 = (P1.x * P2.y - P2.x * P1.y) / (P1.x - P2.x)
         val k2 = (P4.y - P3.y) / (P4.x - P3.x)
         val b2 = (P3.x * P4.y - P4.x * P3.y) / (P3.x - P4.x)
+
         crossP.x = (b2 - b1) / (k1 - k2)
         crossP.y = k1 * crossP.x + b1
+
+        if (k1.isNaN() || k1.isInfinite()) {
+            crossP.x = P1.x
+            crossP.y = k2 * crossP.x + b2
+        }
+
         return crossP
     }
 

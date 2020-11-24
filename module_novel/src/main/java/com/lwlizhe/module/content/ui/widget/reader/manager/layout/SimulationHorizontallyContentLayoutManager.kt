@@ -59,7 +59,7 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
         if (offset % width == 0) {
             addView(topView)
             measureChild(topView, 0, 0)
-            resetViewElevation(topView)
+//            resetViewElevation(topView)
             layoutDecorated(
                 topView,
                 0,
@@ -73,7 +73,7 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
             measureChild(topView, 0, 0)
             measureChild(nextView, 0, 0)
 
-            resetViewElevation(nextView)
+//            resetViewElevation(nextView)
             addView(nextView)
             layoutDecorated(
                 nextView,
@@ -83,7 +83,7 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
                 getDecoratedMeasuredHeight(nextView)
             )
 
-            setViewElevation(topView)
+//            setViewElevation(topView)
             addView(topView)
             layoutDecorated(
                 topView,

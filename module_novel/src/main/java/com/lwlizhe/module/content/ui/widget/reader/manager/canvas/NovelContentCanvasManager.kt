@@ -21,7 +21,7 @@ class NovelContentCanvasManager {
     var currentOutLinePath: Path? = null
     var lastTouchPoint: Point = Point()
 
-    var limitPath: Path? = null
+//    var limitPath: Path? = null
 
     var isMiddlePath = false
     var isCanvasReady= false
@@ -65,7 +65,7 @@ class NovelContentCanvasManager {
 
 
     fun buildPath(dx: Int) {
-        var result: Path? = limitPath
+        var result: Path? = null
         val touchPoint = layoutManager?.touchPoint
         val xPos = touchPoint?.x ?: 0
         val yPos = touchPoint?.y ?: 0
@@ -109,15 +109,15 @@ class NovelContentCanvasManager {
         tempCanvas = Canvas(tempBitmap)
         pretreatmentCanvas(tempCanvas)
 
-        if (limitPath == null) {
-            limitPath = Path()
-            limitPath!!.reset()
-            limitPath!!.moveTo(0F, 0F)
-            limitPath!!.lineTo(width.toFloat(), 0F)
-            limitPath!!.lineTo(width.toFloat(), height.toFloat())
-            limitPath!!.lineTo(0F, height.toFloat())
-            limitPath!!.close()
-        }
+//        if (limitPath == null) {
+//            limitPath = Path()
+//            limitPath!!.reset()
+//            limitPath!!.moveTo(0F, 0F)
+//            limitPath!!.lineTo(width.toFloat(), 0F)
+//            limitPath!!.lineTo(width.toFloat(), height.toFloat())
+//            limitPath!!.lineTo(0F, height.toFloat())
+//            limitPath!!.close()
+//        }
 
         builder?.setPathArea(width, height)
     }
