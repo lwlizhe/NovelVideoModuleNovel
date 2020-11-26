@@ -26,7 +26,8 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
     var isMiddlePath = false
     var isFromTop = false
 
-    var paint = Paint()
+    private var paint = Paint()
+    var shadowPaint = Paint()
 
     var limitPath = Path()
 
@@ -112,8 +113,70 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
     }
 
     override fun buildCanvas(baseCanvas: Canvas, copyCanvas: Canvas, copyBitmap: Bitmap) {
+
+        shadowPaint.style = Paint.Style.FILL_AND_STROKE
+
         drawBackCurlyArea(baseCanvas, copyCanvas, copyBitmap)
         drawContent(baseCanvas, copyCanvas, copyBitmap)
+
+    }
+
+    private fun drawContentShadow(baseCanvas: Canvas) {
+
+        val shadowPointF = calculateContentShadowPoint()
+
+        val horizontalCrossPointF = getCross(
+            shadowPointF, mBezierVertexRight,
+            PointF(mTouchPoint.x.toFloat(), mTouchPoint.y.toFloat()), mBezierControlBottom
+        )
+        val verticalCrossPointF = getCross(
+            shadowPointF, mBezierVertexBottom,
+            PointF(mTouchPoint.x.toFloat(), mTouchPoint.y.toFloat()), mBezierControlRight
+        )
+
+
+        val shadowPathHorizontal = Path()
+        shadowPathHorizontal.close()
+        shadowPathHorizontal.moveTo(mBezierVertexBottom.x, mBezierVertexBottom.y)
+        shadowPathHorizontal.lineTo(shadowPointF.x, shadowPointF.y)
+        shadowPathHorizontal.lineTo(mTouchPoint.x.toFloat(), mTouchPoint.y.toFloat())
+        shadowPathHorizontal.lineTo(mBezierControlBottom.x, mBezierControlBottom.y)
+        shadowPathHorizontal.close()
+
+        val shadowPathVertical = Path()
+        shadowPathVertical.close()
+        shadowPathVertical.moveTo(mBezierVertexRight.x, mBezierVertexRight.y)
+        shadowPathVertical.lineTo(shadowPointF.x, shadowPointF.y)
+        shadowPathVertical.lineTo(mTouchPoint.x.toFloat(), mTouchPoint.y.toFloat())
+        shadowPathVertical.lineTo(mBezierControlRight.x, mBezierControlRight.y)
+        shadowPathVertical.close()
+
+        val colorArray = intArrayOf(
+            0x00111111, 0x00111111.toInt(), 0xCC111111.toInt()
+        )
+        val positionArray = floatArrayOf(0f, 0.5f, 1f)
+        shadowPaint.shader =
+            LinearGradient(
+                shadowPointF.x,
+                shadowPointF.y,
+                horizontalCrossPointF.x,
+                horizontalCrossPointF.y,
+                colorArray,
+                positionArray,
+                Shader.TileMode.MIRROR
+            )
+        baseCanvas.drawPath(shadowPathHorizontal, shadowPaint)
+        shadowPaint.shader =
+            LinearGradient(
+                shadowPointF.x,
+                shadowPointF.y,
+                verticalCrossPointF.x,
+                verticalCrossPointF.y,
+                colorArray,
+                positionArray,
+                Shader.TileMode.MIRROR
+            )
+        baseCanvas.drawPath(shadowPathVertical, shadowPaint)
     }
 
     /**
@@ -121,6 +184,7 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
      */
     private fun drawContent(baseCanvas: Canvas, copyCanvas: Canvas, copyBitmap: Bitmap) {
         val contentPath = Path()
+
         contentPath.reset()
 
         val baseY = if (isFromTop) 0F else height
@@ -145,9 +209,14 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
         contentPath.lineTo(0F, baseY)
         contentPath.close()
 
+
+
         baseCanvas.clipPath(contentPath)
+
 //        baseCanvas.drawColor(Color.parseColor("#FFB6C1"))
         baseCanvas.drawBitmap(copyBitmap, 0F, 0F, paint)
+
+        drawContentShadow(baseCanvas)
     }
 
     /**
@@ -171,17 +240,23 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
         backAreaContentPath.lineTo(mBezierControlBottom.x, mBezierControlBottom.y)
         backAreaContentPath.close()
 
-        val angle = 2 * Math.toDegrees(
+        val angleOffset = Math.toDegrees(
             atan2(
                 (cornerY - mBezierControlRight.y).toDouble(),
                 (cornerX - mBezierControlBottom.x).toDouble()
             )
-        ).toFloat() - 180F
+        ).toFloat()
+
+        val angle = 2 * angleOffset - 180F
+
+//        drawBackCurlyAreaShadow(baseCanvas, angleOffset,0xff111111.toInt(),0x00111111)
 
         baseCanvas.save()
 
         baseCanvas.clipPath(backAreaPath)
         baseCanvas.drawColor(Color.parseColor("#90EE90"))
+
+//        baseCanvas.save()
 
         baseCanvas.translate(mBezierControlBottom.x, mBezierControlBottom.y)
         baseCanvas.scale(-1F, 1F)
@@ -193,9 +268,167 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
 //        baseCanvas.drawColor(Color.parseColor("#90EE90"))
         baseCanvas.drawBitmap(copyBitmap, 0f, 0f, paint)
 
+//        baseCanvas.restore()
+
         baseCanvas.restore()
 
+        drawBackCurlyAreaShadow(baseCanvas, angleOffset)
 
+    }
+
+    /**
+     * 画背部的阴影
+     */
+    private fun drawBackCurlyAreaShadow(
+        baseCanvas: Canvas,
+        angleOffset: Float
+    ) {
+        baseCanvas.save()
+
+        val anchorPointF = calculateBackCurlyAreaBaseAnchor()
+        anchorPointF?.let {
+            val shadowRectF = calculateBackCurlyAreaRectF(angleOffset, anchorPointF)
+            shadowRectF?.let {
+                val colorArray = intArrayOf(
+                    0x00111111,
+                    0xCC111111.toInt(),
+                    0xCC111111.toInt(),
+                    0xCC111111.toInt(),
+                    0x00111111
+                )
+                val positionArray = floatArrayOf(0f, 0.4f, 0.5f, 0.6f, 1f)
+                shadowPaint.shader =
+                    LinearGradient(
+                        shadowRectF.left,
+                        0F,
+                        shadowRectF.right, 0F,
+                        colorArray,
+                        positionArray,
+                        Shader.TileMode.MIRROR
+                    )
+
+                if (90F - angleOffset != 0F) {
+                    baseCanvas.translate(anchorPointF.x, anchorPointF.y)
+                    baseCanvas.rotate(90F - angleOffset)
+                    baseCanvas.drawRect(shadowRectF, shadowPaint)
+                    baseCanvas.translate(-anchorPointF.x, -anchorPointF.y)
+                } else {
+                    baseCanvas.drawRect(shadowRectF, shadowPaint)
+
+                }
+            }
+
+        }
+
+        baseCanvas.restore()
+    }
+
+    private fun setShadowRender(
+        startX: Float,
+        startY: Float,
+        endX: Float,
+        endY: Float,
+        mode: Shader.TileMode
+    ) {
+        val colorArray = intArrayOf(
+            0x00111111, 0xCC111111.toInt(), 0xCC111111.toInt(), 0xCC111111.toInt(), 0x00111111
+        )
+        val positionArray = floatArrayOf(0f, 0.4f, 0.5f, 0.6f, 1f)
+        shadowPaint.shader =
+            LinearGradient(
+                startX,
+                startY,
+                endX,
+                endY,
+                colorArray,
+                positionArray,
+                mode
+            )
+    }
+
+    /**
+     * 计算内容页阴影对应的TouchPoint位置
+     */
+    private fun calculateContentShadowPoint(): PointF {
+        var result = PointF()
+
+        //计算d点到直线ae的距离
+        // Ax+By+C1=0
+        // 公式：|C1-C2|/hypot(A^2+B^2)
+        var newABottom = mTouchPoint.y - mBezierControlBottom.y
+        var newBBottom = mBezierControlBottom.x - mTouchPoint.x
+        var newCBottom =
+            -(newABottom * mBezierControlBottom.x + newBBottom * mBezierControlBottom.y)
+        var newCBottom2 = -(newABottom * mBezierVertexBottom.x + newBBottom * mBezierVertexBottom.y)
+
+        var newARight = mTouchPoint.y - mBezierControlRight.y
+        var newBRight = mBezierControlRight.x - mTouchPoint.x
+        var newCRight = -(newARight * mBezierControlRight.x + newBRight * mBezierControlRight.y)
+        var newCRight2 = -(newARight * mBezierVertexRight.x + newBRight * mBezierVertexRight.y)
+
+        var intersectPointFCBottom = newCBottom2
+        var intersectPointFCRight = newCRight2
+
+        if (newBBottom == 0F) {
+            result.x = mBezierVertexBottom.x
+            result.y = mBezierVertexRight.y
+        } else {
+            result.x =
+                (intersectPointFCRight / newBRight - intersectPointFCBottom / newBBottom) / (newABottom / newBBottom - newARight / newBRight)
+            result.y = -(newABottom * result.x + intersectPointFCBottom) / newBBottom
+        }
+        return result
+    }
+
+    /**
+     * 计算偏移锚点位置
+     */
+    private fun calculateBackCurlyAreaBaseAnchor(): PointF? {
+        var result = PointF()
+
+        //y=kx+b
+        var k =
+            (mBezierVertexRight.y - mBezierVertexBottom.y) / (mBezierVertexRight.x - mBezierVertexBottom.x)
+
+        if (k.isNaN() || k.isInfinite()) {
+            return null
+        }
+        var b = mBezierVertexRight.y - k * mBezierVertexRight.x
+
+        var vertexBottomX = (cornerY - b) / k
+
+        if (vertexBottomX !in 0F..width) {
+            return null
+        }
+
+        result.x = vertexBottomX
+        result.y = cornerY
+        return result
+    }
+
+    /**
+     * 计算背部阴影区域
+     */
+    private fun calculateBackCurlyAreaRectF(angle: Float, anchorPointF: PointF): RectF? {
+        var result = RectF()
+
+        val cosAngle = cos(angle / 180F * PI)
+        val sinAngle = sin(angle / 180F * PI)
+        val rectWidth = sinAngle * (mBezierControlBottom.x - mBezierStartBottom.x)
+        val controllerSideWidth = sinAngle * (mBezierControlBottom.x - anchorPointF.x)
+        val maxHeight = (cornerX - mBezierStartBottom.x) / cosAngle
+        val bottomExtraHeight = (anchorPointF.x - mBezierStartBottom.x) / cosAngle
+
+        if (rectWidth.isInfinite() || controllerSideWidth.isInfinite() || rectWidth.isNaN() || controllerSideWidth.isNaN()) {
+            return null
+        }
+
+        result.left = -abs((controllerSideWidth.toFloat() - rectWidth.toFloat()))
+        result.top = -maxHeight.toFloat()
+        result.right = abs(controllerSideWidth.toFloat())
+        result.bottom = bottomExtraHeight.toFloat()
+
+        return result
     }
 
     /**
@@ -217,7 +450,7 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
 
         // 当mBezierStartBottom.x < 0或者mBezierStartBottom.x > 480时
         // 如果继续翻页，会出现BUG故在此限制
-        if (mTouchPoint.x > 0 && mTouchPoint.x < width) {
+        if (mTouchPoint.x in 1 until width.toInt()) {
             if (mBezierStartBottom.x < 0 || mBezierStartBottom.x > width) {
                 if (mBezierStartBottom.x < 0) mBezierStartBottom.x = width - mBezierStartBottom.x
                 val f1 = abs(cornerX - mTouchPoint.x)

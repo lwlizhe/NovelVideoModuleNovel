@@ -167,7 +167,7 @@ class NovelPageSimulationSnapHelper(private var layoutMode: BaseContentLayoutMan
             }
 
             override fun calculateSpeedPerPixel(displayMetrics: DisplayMetrics): Float {
-                return 50F / displayMetrics.densityDpi
+                return 100F / displayMetrics.densityDpi
             }
 
         }
@@ -191,7 +191,7 @@ class NovelPageSimulationSnapHelper(private var layoutMode: BaseContentLayoutMan
         val snapView = findSnapView(layoutManager) ?: return
         val snapDistance = calculateDistanceToFinalSnap(layoutManager, snapView)
         if (snapDistance!![0] != 0 || snapDistance[1] != 0) {
-            mRecyclerView!!.smoothScrollBy(snapDistance[0], snapDistance[1],LinearInterpolator(),200)
+            mRecyclerView!!.smoothScrollBy(snapDistance[0], snapDistance[1],LinearInterpolator(),300)
         }
     }
 

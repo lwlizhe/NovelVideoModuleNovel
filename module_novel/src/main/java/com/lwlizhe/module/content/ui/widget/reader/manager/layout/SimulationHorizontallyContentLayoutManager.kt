@@ -142,7 +142,7 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
 //                            val i = (max(0, offset / width) * width + ev.x.toInt())-offset
                             val i = (offset - (offset / width) * width) - (ev.x.toInt())
                             canvasManager.setFirstTouchPoint(Point(0, roundY))
-                            mRecyclerView?.smoothScrollBy(i, 0, LinearInterpolator(), 200)
+                            mRecyclerView?.smoothScrollBy(i, 0, LinearInterpolator(), 300)
                         }
                     } else {
                         if (offset / width < itemCount - 1) {
@@ -150,7 +150,7 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
                             val i = offset / width * width + (width - ev.x.toInt()) - offset
                             canvasManager.setFirstTouchPoint(Point(width, roundY))
 
-                            mRecyclerView?.smoothScrollBy(i, 0, LinearInterpolator(), 200)
+                            mRecyclerView?.smoothScrollBy(i, 0, LinearInterpolator(), 300)
                         }
                     }
                 } else {
