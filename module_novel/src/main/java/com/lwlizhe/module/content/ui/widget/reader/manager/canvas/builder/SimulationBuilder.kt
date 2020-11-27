@@ -547,6 +547,11 @@ class SimulationBuilder(manager: NovelContentCanvasManager) : BaseBuilder(manage
             crossP.y = k2 * crossP.x + b2
         }
 
+        if(k2.isNaN()||k2.isInfinite()){
+            crossP.x=P3.x
+            crossP.y=k1*crossP.x+b1
+        }
+
         return crossP
     }
 
