@@ -1,6 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.lwlizhe.module" >
     <application>
-        <activity android:name=".content.ui.NovelContentActivity"/>
+        <activity android:name="com.lwlizhe.module.novel.content.ui.view.NovelContentActivity"/>
+        <activity android:name="com.lwlizhe.module.novel.content.ui.view.NovelMainActivity"/>
     </application>
 </manifest>

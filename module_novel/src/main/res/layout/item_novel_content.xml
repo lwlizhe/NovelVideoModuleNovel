@@ -5,7 +5,7 @@
     android:layout_height="match_parent">
 
 
-    <!--    <com.lwlizhe.module.content.ui.test.simulation.TestView-->
+    <!--    <com.lwlizhe.module.novel.content.ui.test.simulation.TestView-->
     <!--        android:id="@+id/test_view"-->
     <!--        android:layout_width="match_parent"-->
     <!--        android:layout_height="100dp">-->
@@ -43,7 +43,7 @@
 
         </LinearLayout>
 
-        <!--    </com.lwlizhe.module.content.ui.test.simulation.TestView>-->
+        <!--    </com.lwlizhe.module.novel.content.ui.test.simulation.TestView>-->
 
         <TextView
             android:textSize="50sp"
