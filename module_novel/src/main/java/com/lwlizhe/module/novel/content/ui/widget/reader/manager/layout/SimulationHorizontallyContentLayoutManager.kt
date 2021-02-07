@@ -214,7 +214,7 @@ class SimulationHorizontallyContentLayoutManager(context: Context) :
         return currentScrollState == RecyclerView.SCROLL_STATE_DRAGGING
     }
 
-    override fun isNeedInterceptEvent(ev: MotionEvent): Boolean{
+    override fun isNeedInterceptEvent(ev: MotionEvent): Boolean {
         return true
     }
 

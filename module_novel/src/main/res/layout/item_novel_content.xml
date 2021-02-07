@@ -29,9 +29,11 @@
             </TextView>
 
             <ImageView
+                android:layout_gravity="center"
+                android:id="@+id/ivw_img"
                 android:src="@drawable/ic_launcher_background"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_width="100dp"
+                android:layout_height="100dp"/>
 
             <TextView
                 android:textSize="30sp"
@@ -62,7 +64,8 @@
             android:layout_alignParentBottom="true"
             android:layout_margin="20dp"
             android:text="1"
-            android:textSize="20sp" />
+            android:textColor="#FF0000"
+            android:textSize="30sp" />
 
     </RelativeLayout>
 

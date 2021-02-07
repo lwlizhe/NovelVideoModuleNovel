@@ -1,7 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.lwlizhe.module" >
+    
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application>
-        <activity android:name="com.lwlizhe.module.novel.content.ui.view.NovelContentActivity"/>
-        <activity android:name="com.lwlizhe.module.novel.content.ui.view.NovelMainActivity"/>
+        <activity android:name="com.lwlizhe.module.novel.content.ui.view.activity.NovelContentActivity"/>
+        <activity android:name=".novel.content.ui.view.activity.NovelMainActivity" />
     </application>
 </manifest>

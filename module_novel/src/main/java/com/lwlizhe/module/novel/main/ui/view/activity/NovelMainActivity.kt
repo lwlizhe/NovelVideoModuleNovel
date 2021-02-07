@@ -1,4 +1,4 @@
-package com.lwlizhe.module.novel.content.ui.view
+package com.lwlizhe.module.novel.content.ui.view.activity
 
 import android.content.Context
 import android.graphics.Color

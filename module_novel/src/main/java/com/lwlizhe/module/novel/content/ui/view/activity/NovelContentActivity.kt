@@ -1,4 +1,4 @@
-package com.lwlizhe.module.novel.content.ui.view
+package com.lwlizhe.module.novel.content.ui.view.activity
 
 import com.lwlizhe.module.R
 import com.lwlizhe.module.novel.content.ui.viewmodel.NovelContentViewModel
